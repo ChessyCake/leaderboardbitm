@@ -70,4 +70,4 @@ cfSchema.index({ totalSolved: -1 });
 cfSchema.index({ rating: -1 });
 cfSchema.index({ streak: -1 });
 
-export default mongoose.model("Codeforces", cfSchema);
+export default  mongoose.model("Codeforces", cfSchema);

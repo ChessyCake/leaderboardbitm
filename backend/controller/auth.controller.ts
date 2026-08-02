@@ -18,6 +18,7 @@ export const googleCallback = ( req: Request, res: Response) => {
         }
     );
 
+    console.log(token)
     res.redirect(
         `${process.env.FRONTEND_URL}/login-success?token=${token}`
     )
