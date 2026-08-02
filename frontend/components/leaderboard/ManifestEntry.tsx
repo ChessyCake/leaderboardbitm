@@ -124,8 +124,8 @@ export default function ManifestEntry({ user, rank }: ManifestEntryProps) {
             value={user.cfRating ?? "—"}
           />
           <StatField
-            label="LC RATING"
-            value={user.lcRating ?? "—"}
+            label="CF MAX"
+            value={user.cfMaxRating ?? "—"}
           />
         </div>
       </div>
