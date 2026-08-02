@@ -7,13 +7,13 @@ import "../config/passport";
 
 import authRoutes from "../routes/auth.routes"
 import onboardingRoutes from "../routes/onboarding.routes"
+import leaderboardRoutes from "../routes/leaderboard.route";
 
 const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
-    credentials: true,
+    origin: process.env.FRONTEND_URL,
   })
 );
 
@@ -24,5 +24,6 @@ app.use(passport.initialize());
 
 app.use("/auth", authRoutes)
 app.use("/onboarding", onboardingRoutes)
+app.use("/api/leaderboard", leaderboardRoutes);
 
 export default app;

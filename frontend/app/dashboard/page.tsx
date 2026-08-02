@@ -62,11 +62,10 @@ const date =
   return (
     <main className="min-h-screen bg-background text-on-background p-8">
 
-      <section className="font-bold"> 
-          <h1 className="text-5xl">{date}</h1>
+      <section className=""> 
+          <h1 className=" font-bold text-5xl">{date}</h1>
           <div className="flex gap-2">
-          <p>Todays total solved and streaks</p>
-          <p>Last Synced: </p>
+          <p className=""> Data since last synced: </p>
           </div>
       </section>
 

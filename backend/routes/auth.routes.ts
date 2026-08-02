@@ -18,7 +18,7 @@ router.get(
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    failureRedirect: "http://localhost:3000/login?error=bit-email",
+    failureRedirect: `${process.env.FRONTEND_URL}/login?error=bit-email`,
     session: false,
   }),
   googleCallback

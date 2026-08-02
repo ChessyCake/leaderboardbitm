@@ -99,7 +99,7 @@ export default function Navbar() {
 
                 <button
                   onClick={logout}
-                  className="rounded-lg border border-outline-variant px-3 py-2 text-sm font-medium text-on-surface transition hover:border-primary hover:text-primary cursor-pointer"
+                  className="rounded-lg border border-outline-variant border-2 px-3 py-2 text-sm font-medium text-on-surface transition hover:border-primary hover:text-primary cursor-pointer"
                 >
                   Logout
                 </button>

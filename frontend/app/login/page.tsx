@@ -1,29 +1,25 @@
 "use client";
 
-import { FcGoogle } from "react-icons/fc";
-import { FaRankingStar } from "react-icons/fa6";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { api } from "@/lib/api";
 
-import { useSearchParams } from "next/navigation";
-import { IoIosWarning } from "react-icons/io";
+import { FcGoogle } from "react-icons/fc";
+
 export default function LoginPage() {
-
-  const router = useRouter()
-
-  const searchParams = useSearchParams()
-  const error = searchParams.get("error")
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
 
   useEffect(() => {
-  if (!error) return;
+    if (!error) return;
 
-  const timer = setTimeout(() => {
-    router.replace("/login");
-  }, 6000);
+    const timer = setTimeout(() => {
+      router.replace("/login");
+    }, 6000);
 
-  return () => clearTimeout(timer);
-}, [error, router]);
+    return () => clearTimeout(timer);
+  }, [error, router]);
 
   useEffect(() => {
     const check = async () => {
@@ -55,109 +51,83 @@ export default function LoginPage() {
   }, [router]);
 
   const login = () => {
-    window.location.href = "http://localhost:4000/auth/google";
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
   };
 
   return (
-    <main className="relative flex min-h-screen items-start justify-center overflow-hidden bg-background px-5 pt-20 pb-10 sm:items-center sm:px-6 sm:pt-0 flex-col">
-
-
-
-      <div className="absolute inset-0 overflow-hidden">
-   
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px)
-            `,
-            backgroundSize: "48px 48px",
-          }}
-        />
-
-     
-        <div className="absolute left-1/2 top-1/2 h-[750px] w-[750px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-[180px]" />
-
-     
-        <div className="hidden md:block absolute -left-40 top-20 h-[450px] w-[450px] rounded-full bg-primary/8 blur-[160px]" />
-
-        <div className="hidden md:block absolute right-0 bottom-0 h-[500px] w-[500px] rounded-full bg-orange-500/5 blur-[180px]" />
-
-      
+    <main className="min-h-screen flex items-center justify-center bg-background relative bg-dots p-6">
+      <div className="relative w-full max-w-[500px] h-[500px]">
         
-      </div>
+     
+        <div className="absolute inset-0 translate-x-3 translate-y-3 bg-foreground hidden md:block z-0" />
 
-      <div className="relative z-10 flex w-full flex-col max-w-md gap-4 mt-4 mb-4">
 
-    {error === "bit-email" && (
-      <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 backdrop-blur-xl">
-        <div className="flex items-start gap-3">
-          <div className="mt-0.5 text-red-400 text-lg">
-             <IoIosWarning size={28} />
+        <div className="absolute inset-0 bg-background border-2 border-foreground z-10 flex flex-col">
+          
+      
+          <div className="h-12 bg-foreground text-background flex items-center px-4 font-mono font-bold text-sm tracking-wider shrink-0">
+            AUTH_GATEWAY
           </div>
-
-          <div>
-            <h3 className="font-semibold text-red-300">
-              Access Denied
-            </h3>
-
-            <p className="mt-1 text-sm leading-6 text-red-200/80">
-              Only{" "}
-              <span className="font-semibold">
-                @bitmesra.ac.in
-              </span>{" "}
-              Google accounts are allowed.
-            </p>
-          </div>
-        </div>
-      </div>
-    )}
-    </div>
-
-      <div className="relative z-10 w-full max-w-md rounded-2xl sm:rounded-3xl border border-outline-variant/70 bg-surface-container/80 backdrop-blur-2xl shadow-[0_30px_80px_rgba(0,0,0,.55)] p-6 sm:p-10">
-
-        <div className="mx-auto mb-6 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10">
-          <span className="text-2xl sm:text-3xl font-bold text-primary">
-            <FaRankingStar />
-          </span>
-        </div>
 
   
-        <h1 className="text-center text-3xl sm:text-4xl font-bold leading-tight text-on-surface">
-          Welcome to{" "}
-          <span className="text-primary">
-            ProjectX
-          </span>
-        </h1>
-
-
-        <p className="mt-3 text-center text-sm leading-6 sm:leading-7 text-on-surface-variant">
-          Continue using your{" "}
-          <span className="font-semibold text-primary">
-            @bitmesra.ac.in
-          </span>{" "}
-          Google account.
-        </p>
-
-        <button
-          onClick={login}
-          className="mt-8 flex w-full items-center justify-center gap-3 rounded-xl bg-white px-5 py-3 text-sm sm:text-base font-medium cursor-pointer text-black transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl active:translate-y-0"
-        >
-          <FcGoogle size={22} />
-          Continue with Google
-        </button>
-
+          <div className="flex-1 p-8 flex flex-col">
+            <div className="max-w-[360px] space-y-6">
+              
     
-        <div className="my-7 h-px bg-outline-variant/40" />
+              <p 
+                className={`w-fit px-3 py-1 text-xs font-mono font-bold text-black uppercase tracking-widest ${
+                  error ? "bg-red-500" : "bg-[#ccff00]"
+                }`}
+              >
+                {error ? "AUTHENTICATION_FAILED" : "AWAITING CREDENTIALS"}
+              </p>
 
-        <p className="text-center text-xs leading-5 text-on-surface-variant">
-          Access is restricted to{" "}
-          <span className="font-medium text-primary">
-            verified @bitmesra.ac.in
-          </span>{" "}
-          accounts.
-        </p>
+              <div className="space-y-4">
+                <h1 className="text-6xl font-black leading-[0.9] text-foreground tracking-tighter uppercase">
+                  SYSTEM_<br />
+                  ACCESS
+                </h1>
+
+                <p className="text-sm text-foreground/70 font-medium">
+                  Get access using your @bitmesra.ac.in account.
+                </p>
+
+            
+                {error === "bit-email" && (
+                  <div className="border-l-4 border-red-500 bg-red-500/10 p-3 mt-4">
+                    <p className="text-red-500 font-mono text-xs font-bold uppercase">
+                      &gt; ACCESS DENIED: Only @bitmesra.ac.in emails are permitted in this sector.
+                    </p>
+                  </div>
+                )}
+                {error && error !== "bit-email" && (
+                  <div className="border-l-4 border-red-500 bg-red-500/10 p-3 mt-4">
+                    <p className="text-red-500 font-mono text-xs font-bold uppercase">
+                      &gt; ERR: An unknown authentication error occurred.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+           
+              <div className="relative h-14 w-full sm:w-fit mt-8">
+                <div className="absolute inset-0 translate-x-2 translate-y-2 bg-foreground hidden sm:block" />
+
+                <button
+                  onClick={login}
+                  className="relative z-10 w-full h-14 px-6 flex items-center justify-center gap-3 bg-[#ccff00] border-2 border-foreground font-mono font-bold text-black text-sm tracking-wider cursor-pointer hover:bg-[#b3e600] active:translate-x-[2px] active:translate-y-[2px] transition-all"
+                >
+                  <FcGoogle className="w-5 h-5 bg-white rounded-full" />
+                  INITIATE SESSION
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-auto text-[10px] font-mono text-foreground/50 uppercase tracking-widest">
+              BUILD V1.0.2 • SECURE_GATEWAY
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   );

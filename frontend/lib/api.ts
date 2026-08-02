@@ -2,7 +2,8 @@ export async function api(url: string, options: RequestInit = {}) {
 
     const token = localStorage.getItem("token");
 
-    return fetch(`http://localhost:4000${url}`, {
+    const BASE_URL = process.env.NEXT_PUBLIC_API_URL!;
+    return fetch(`${BASE_URL}${url}`, {
         ...options,
 
         headers: {

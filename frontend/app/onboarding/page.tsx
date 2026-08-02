@@ -12,11 +12,11 @@ export default function Onboarding() {
 
   const [leetcode, setLeetcode] = useState("");
   const [codeforces, setCodeforces] = useState("");
+
   const [loading, setLoading] = useState(false);
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
-
     setLoading(true);
 
     try {
@@ -47,97 +47,110 @@ export default function Onboarding() {
   };
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-6">
+    <main className="min-h-screen bg-background bg-dots flex items-center justify-center p-6 md:p-10 overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-[320px_480px] gap-8 lg:gap-12 items-stretch max-w-5xl w-full">
+        
+        {/* LEFT PANEL */}
+        <div className="relative w-full h-full flex flex-col">
+          {/* Offset Shadow */}
+          <div className="absolute inset-0 translate-x-3 translate-y-3 bg-foreground hidden md:block" />
+          
+          {/* Main Card */}
+          <div className="relative h-full flex flex-col border-2 border-foreground bg-background p-8">
+            
+            <div className="inline-flex items-center mb-6 text-xs font-mono font-bold text-[#ccff00] bg-foreground/10 w-fit px-2 py-1 border border-foreground/20">
+              [SYS: INIT]
+            </div>
 
-      {/* Background */}
+            <h1 className="text-4xl lg:text-5xl font-black leading-[0.95] tracking-tighter text-foreground uppercase break-words">
+              OPERATOR<br />
+              REGISTRATION
+            </h1>
 
-      <div className="absolute inset-0">
+            <p className="mt-6 text-sm leading-relaxed text-foreground/70 font-medium max-w-[280px]">
+              Connect your codeforces and leetcode data streams. One of the field is optional
+            </p>
 
-        <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage: `
-            linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px)
-          `,
-            backgroundSize: "48px 48px",
-          }}
-        />
+            
+          </div>
+        </div>
 
-        <div className="absolute left-1/2 top-1/2 h-[850px] w-[850px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-[180px]" />
+        {/* RIGHT PANEL */}
+        <div className="relative w-full h-full flex flex-col">
+          {/* Offset Shadow */}
+          <div className="absolute inset-0 translate-x-3 translate-y-3 bg-foreground hidden md:block" />
+          
+          {/* Main Form */}
+          <form
+            onSubmit={submit}
+            className="relative h-full flex flex-col border-2 border-foreground bg-background"
+          >
+            {/* Header */}
+            <div className="h-12 border-b-2 border-foreground bg-background flex items-center justify-between px-6 shrink-0">
+              <span className="font-mono text-xs font-bold text-foreground flex items-center gap-2">
+                &lt;/&gt; INPUT_STREAM
+              </span>
+              <span className="font-mono text-[10px] font-bold bg-foreground text-background px-2 py-1">
+                [STEP_01]
+              </span>
+            </div>
+
+            <div className="flex-1 p-6 md:p-8 flex flex-col gap-8 justify-between">
+              
+              <div className="flex flex-col gap-8">
+                {/* LeetCode Input */}
+                <div className="space-y-3">
+                  <label className="font-mono text-xs font-bold text-foreground uppercase tracking-wider">
+                    LEETCODE USERNAME
+                  </label>
+                  <div className="border-2 border-foreground h-12 flex items-center group focus-within:ring-2 focus-within:ring-[#ccff00] transition-all bg-background">
+                    <div className="h-full aspect-square bg-foreground text-background flex items-center justify-center border-r-2 border-foreground">
+                      <GiLaurelsTrophy className="w-5 h-5" />
+                    </div>
+                    <input
+                      value={leetcode}
+                      onChange={(e) => setLeetcode(e.target.value)}
+                      placeholder="Enter handle..."
+                      className="flex-1 h-full px-4 bg-transparent outline-none text-foreground placeholder:text-foreground/40 font-mono text-sm"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Codeforces Input */}
+                <div className="space-y-3">
+                  <label className="font-mono text-xs font-bold text-foreground uppercase tracking-wider">
+                    CODEFORCES USERNAME
+                  </label>
+                  <div className="border-2 border-foreground h-12 flex items-center group focus-within:ring-2 focus-within:ring-[#ccff00] transition-all bg-background">
+                    <div className="h-full aspect-square bg-foreground text-background flex items-center justify-center border-r-2 border-foreground">
+                      <FaCode className="w-5 h-5" />
+                    </div>
+                    <input
+                      value={codeforces}
+                      onChange={(e) => setCodeforces(e.target.value)}
+                      placeholder="Enter handle..."
+                      className="flex-1 h-full px-4 bg-transparent outline-none text-foreground placeholder:text-foreground/40 font-mono text-sm"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className="mt-8">
+                <button
+                  disabled={loading}
+                  className="w-full h-14 bg-[#ccff00] border-2 border-foreground font-mono font-bold text-black text-sm tracking-wider transition-all hover:bg-[#b3e600] active:translate-x-[2px] active:translate-y-[2px] disabled:opacity-70 disabled:active:translate-x-0 disabled:active:translate-y-0 flex items-center justify-center gap-2"
+                >
+                  {loading ? "INITIALIZING..." : "COMPLETE_ENROLLMENT →"}
+                </button>
+              </div>
+
+            </div>
+          </form>
+        </div>
       </div>
-
-      {/* Card */}
-
-      <form
-        onSubmit={submit}
-        className="relative z-10 w-full max-w-xl rounded-3xl border border-outline-variant/60 bg-surface-container/80 p-8 shadow-[0_30px_80px_rgba(0,0,0,.55)] backdrop-blur-2xl md:p-10"
-      >
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10">
-          <GiLaurelsTrophy className="text-primary" size={30} />
-        </div>
-
-        <h1 className="text-center text-4xl font-bold text-on-surface">
-          Complete your profile
-        </h1>
-
-        <p className="mt-3 text-center text-sm leading-7 text-on-surface-variant">
-          Add your competitive programming usernames.
-          <br />
-          <span className="text-primary">
-            You can leave one of them empty.
-          </span>
-        </p>
-
-        <div className="mt-10 space-y-6">
-
-          {/* Codeforces */}
-
-          <div>
-            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-on-surface">
-              <FaCode size={16} className="text-primary" />
-              Codeforces Username
-            </label>
-
-            <input
-              value={codeforces}
-              onChange={(e) => setCodeforces(e.target.value)}
-              placeholder="tourist"
-              className="w-full rounded-xl border border-outline-variant bg-surface px-4 py-3 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-            />
-          </div>
-
-          {/* Leetcode */}
-
-          <div>
-            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-on-surface">
-              <FaCode size={16} className="text-primary" />
-              LeetCode Username
-            </label>
-
-            <input
-              value={leetcode}
-              onChange={(e) => setLeetcode(e.target.value)}
-              placeholder="delvety"
-              className="w-full rounded-xl border border-outline-variant bg-surface px-4 py-3 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-            />
-          </div>
-
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="mt-10 w-full rounded-xl cursor-pointer bg-primary py-3 text-base font-semibold text-on-primary transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {loading ? "Saving..." : "Continue"}
-        </button>
-
-        <p className="mt-6 text-center text-xs leading-6 text-on-surface-variant">
-          Your usernames are used to fetch submissions and generate your
-          leaderboard statistics.
-        </p>
-      </form>
     </main>
   );
 }
