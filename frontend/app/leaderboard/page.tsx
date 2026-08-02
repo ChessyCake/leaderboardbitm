@@ -135,15 +135,17 @@ export default function LeaderboardPage() {
       if (json.stats) {
         setStats(json.stats);
       }
-    } catch {
-      /* Fallback to mock data when backend is unreachable */
-      console.warn("Backend unavailable — using mock data");
-      setUsers(MOCK_USERS);
-      setStats(MOCK_STATS);
-      setTotalPages(1);
-      setTotalUsers(MOCK_USERS.length);
-      setIsMock(true);
-    } finally {
+    } catch (err) {
+    console.error(err);
+
+    console.warn("Backend unavailable — using mock data");
+
+    setUsers(MOCK_USERS);
+    setStats(MOCK_STATS);
+    setTotalPages(1);
+    setTotalUsers(MOCK_USERS.length);
+    setIsMock(true);
+} finally {
       setLoading(false);
     }
   }, []);
