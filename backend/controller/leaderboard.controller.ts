@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Codeforces from "../models/cfstats.model";
+import User from "../models/users.model";
 
 export const getLeaderboard = async (
     req: Request,
@@ -23,19 +24,22 @@ export const getLeaderboard = async (
             .limit(limit)
             .populate(
                 "user",
-                "name avatar codeforces_username"
+                "name avatar codeforces_username leetcode_username"
             );
 
         const data = leaderboard.map((cf, index) => ({
 
             rank: skip + index + 1,
 
-            name: (cf.user as any).name,
+            name: (cf.user as any)?.name || "Unknown",
 
-            avatar: (cf.user as any).avatar,
+            avatar: (cf.user as any)?.avatar || "",
 
             codeforcesUsername:
-                (cf.user as any).codeforces_username,
+                (cf.user as any)?.codeforces_username || "",
+
+            leetcodeUsername:
+                (cf.user as any)?.leetcode_username || "",
 
             streak: cf.streak,
 
@@ -43,7 +47,30 @@ export const getLeaderboard = async (
 
             totalSolved: cf.totalSolved,
 
+            cfRating: cf.rating,
+
+            cfMaxRating: cf.maxRating,
+
+            cfRank: cf.rank,
+
         }));
+
+        /* ── Aggregate stats for the dashboard cards ── */
+        const [statsAgg] = await Codeforces.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    solvedToday: { $sum: "$todaySolved" },
+                    activeStreaks: {
+                        $sum: { $cond: [{ $gt: ["$streak", 0] }, 1, 0] },
+                    },
+                },
+            },
+        ]);
+
+        const studentsOnline = await User.countDocuments({
+            codeforces_username: { $ne: "" },
+        });
 
         return res.status(200).json({
 
@@ -55,7 +82,14 @@ export const getLeaderboard = async (
 
             totalUsers,
 
-            leaderboard: data
+            leaderboard: data,
+
+            stats: {
+                studentsOnline,
+                solvedToday: statsAgg?.solvedToday ?? 0,
+                activeStreaks: statsAgg?.activeStreaks ?? 0,
+                totalRegistered: totalUsers,
+            },
 
         });
 
