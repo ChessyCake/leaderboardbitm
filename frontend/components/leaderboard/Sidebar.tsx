@@ -16,7 +16,7 @@ const NAV_ITEMS = [
   { label: "LIVE_STATS", icon: Activity, href: "/dashboard" },
   { label: "RANKINGS", icon: Trophy, href: "/leaderboard" },
   { label: "TERMINAL", icon: Terminal, href: "#" },
-  { label: "ARCHIVE", icon: Archive, href: "#" },
+  { label: "ARCHIVE", icon: Archive, href: "/archive" },
 ];
 
 export default function Sidebar() {

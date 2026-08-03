@@ -1,0 +1,874 @@
+"use client";
+
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { api } from "@/lib/api";
+import type {
+  LeaderboardUser,
+  StatsOverview,
+  WeeklyStats,
+  ArchiveApiResponse,
+} from "@/lib/types";
+
+import ManifestEntry from "@/components/leaderboard/ManifestEntry";
+import LeaderboardFooter from "@/components/leaderboard/LeaderboardFooter";
+
+import {
+  Archive,
+  Calendar,
+  Code2,
+  Braces,
+  Users,
+  Database,
+  ExternalLink,
+  ChevronRight,
+} from "lucide-react";
+
+/* ── Helpers ── */
+function formatDateKey(d: Date): string {
+  return d.toISOString().split("T")[0]; // YYYY-MM-DD
+}
+
+function formatDateLabel(d: Date): string {
+  return d.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function getPast7Days(): { key: string; label: string; date: Date }[] {
+  const days: { key: string; label: string; date: Date }[] = [];
+  for (let i = 1; i <= 7; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push({ key: formatDateKey(d), label: formatDateLabel(d), date: d });
+  }
+  return days;
+}
+
+/* ── Mock data (used when backend archive API is not yet available) ── */
+const MOCK_ARCHIVE_USERS: LeaderboardUser[] = [
+  {
+    rank: 1,
+    name: "Ghost Proto",
+    avatar: "",
+    codeforcesUsername: "GHOST_PROTO",
+    streak: 40,
+    todaySolved: 12,
+    totalSolved: 1388,
+    cfRating: 2450,
+    tier: "TIER_S",
+    role: "SYS_ADMIN",
+    id: 8842,
+  },
+  {
+    rank: 2,
+    name: "Null Ptr",
+    avatar: "",
+    codeforcesUsername: "NULL_PTR",
+    streak: 19,
+    todaySolved: 7,
+    totalSolved: 1112,
+    cfRating: 2100,
+    tier: "TIER_A",
+    id: 7109,
+  },
+  {
+    rank: 3,
+    name: "Cyber Knight",
+    avatar: "",
+    codeforcesUsername: "CYBER_KNIGHT",
+    streak: 14,
+    todaySolved: 10,
+    totalSolved: 968,
+    cfRating: 1950,
+    tier: "TIER_A",
+    id: 9021,
+  },
+  {
+    rank: 4,
+    name: "Byte Storm",
+    avatar: "",
+    codeforcesUsername: "BYTE_STORM",
+    streak: 8,
+    todaySolved: 5,
+    totalSolved: 864,
+    cfRating: 1800,
+    tier: "TIER_B",
+    id: 4412,
+  },
+  {
+    rank: 5,
+    name: "Hex Venom",
+    avatar: "",
+    codeforcesUsername: "HEX_VENOM",
+    streak: 6,
+    todaySolved: 4,
+    totalSolved: 645,
+    cfRating: 1700,
+    tier: "TIER_B",
+    id: 3301,
+  },
+];
+
+const MOCK_STATS: StatsOverview = {
+  studentsOnline: 128,
+  solvedToday: 1042,
+  activeStreaks: 76,
+  totalRegistered: 2450,
+};
+
+const MOCK_WEEKLY_STATS: WeeklyStats = {
+  totalCfSolved: 4218,
+  totalLcSolved: 3764,
+  onlineUsers: 342,
+  daysArchived: 7,
+};
+
+const DISCORD_LINK = "https://discord.gg/jTTckmfwfR";
+
+/* ── Weekly Stats Card Config ── */
+const WEEKLY_CARD_CONFIG = [
+  {
+    sysCode: "ARC.01",
+    label: "CF SOLVED (WEEK)",
+    key: "totalCfSolved" as const,
+    icon: Code2,
+    highlight: true,
+  },
+  {
+    sysCode: "ARC.02",
+    label: "LC SOLVED (WEEK)",
+    key: "totalLcSolved" as const,
+    icon: Braces,
+    highlight: false,
+  },
+  {
+    sysCode: "ARC.03",
+    label: "ONLINE USERS (WEEK)",
+    key: "onlineUsers" as const,
+    icon: Users,
+    highlight: false,
+  },
+  {
+    sysCode: "ARC.04",
+    label: "DAYS ARCHIVED",
+    key: "daysArchived" as const,
+    icon: Database,
+    highlight: false,
+  },
+];
+
+export default function ArchivePage() {
+  const days = useMemo(() => getPast7Days(), []);
+  const [selectedDate, setSelectedDate] = useState(days[0].key);
+  const [users, setUsers] = useState<LeaderboardUser[]>([]);
+  const [stats, setStats] = useState<StatsOverview>(MOCK_STATS);
+  const [weeklyStats, setWeeklyStats] =
+    useState<WeeklyStats>(MOCK_WEEKLY_STATS);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [isMock, setIsMock] = useState(false);
+
+  /* ── Fetch archive data for a specific date ── */
+  const fetchArchive = useCallback(
+    async (date: string, pageNum: number) => {
+      setLoading(true);
+      try {
+        const res = await api(
+          `/api/archive?date=${date}&page=${pageNum}`
+        );
+
+        if (!res.ok) throw new Error("Failed to fetch archive");
+
+        const json: ArchiveApiResponse = await res.json();
+
+        const mapped: LeaderboardUser[] = (json.leaderboard || []).map(
+          (u) => ({
+            rank: u.rank,
+            name: u.name,
+            avatar: u.avatar || "",
+            codeforcesUsername: u.codeforcesUsername || u.name,
+            leetcodeUsername: u.leetcodeUsername,
+            streak: u.streak ?? 0,
+            todaySolved: u.todaySolved ?? 0,
+            totalSolved: u.totalSolved ?? 0,
+            cfRating: u.cfRating,
+            cfMaxRating: u.cfMaxRating,
+            cfRank: u.cfRank,
+          })
+        );
+
+        setUsers(mapped);
+        setPage(json.page);
+        setTotalPages(json.totalPages);
+        setTotalUsers(json.totalUsers);
+        setIsMock(false);
+
+        if (json.stats) {
+          setStats(json.stats);
+        }
+      } catch {
+        console.warn("Archive API unavailable — using mock data");
+        setUsers(MOCK_ARCHIVE_USERS);
+        setStats(MOCK_STATS);
+        setTotalPages(1);
+        setTotalUsers(MOCK_ARCHIVE_USERS.length);
+        setIsMock(true);
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  /* ── Fetch weekly aggregate stats ── */
+  const fetchWeeklyStats = useCallback(async () => {
+    try {
+      const res = await api("/api/archive/weekly-stats");
+      if (!res.ok) throw new Error("Failed to fetch weekly stats");
+      const json = await res.json();
+      setWeeklyStats(json);
+    } catch {
+      console.warn("Weekly stats API unavailable — using mock data");
+      setWeeklyStats(MOCK_WEEKLY_STATS);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchArchive(selectedDate, page);
+  }, [selectedDate, page, fetchArchive]);
+
+  useEffect(() => {
+    fetchWeeklyStats();
+  }, [fetchWeeklyStats]);
+
+  const handleDateSelect = (dateKey: string) => {
+    setSelectedDate(dateKey);
+    setPage(1);
+  };
+
+  const handlePrevPage = () => {
+    if (page > 1) setPage((p) => p - 1);
+  };
+
+  const handleNextPage = () => {
+    if (page < totalPages) setPage((p) => p + 1);
+  };
+
+  /* ── Loading skeleton ── */
+  if (loading) {
+    return (
+      <div
+        className="min-h-screen px-6 md:px-10 py-8 md:py-12"
+        style={{ background: "var(--lb-bg)" }}
+      >
+        {/* Header skeleton */}
+        <ArchiveHeader />
+
+        {/* Date filter skeleton */}
+        <DateFilter
+          days={days}
+          selectedDate={selectedDate}
+          onSelect={handleDateSelect}
+        />
+
+        {/* Stats skeleton */}
+        <div
+          className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-px"
+          style={{ background: "var(--lb-border)" }}
+        >
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="p-5"
+              style={{ background: "var(--lb-card-bg)" }}
+            >
+              <div
+                className="h-3 w-16 rounded-sm animate-pulse mb-3"
+                style={{ background: "var(--lb-border-accent)" }}
+              />
+              <div
+                className="h-10 w-24 rounded-sm animate-pulse mb-2"
+                style={{ background: "var(--lb-border)" }}
+              />
+              <div
+                className="h-3 w-20 rounded-sm animate-pulse"
+                style={{ background: "var(--lb-border-accent)" }}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Entry skeletons */}
+        <div className="mt-10">
+          <div className="mb-6">
+            <span
+              className="inline-block border px-4 py-2 font-mono text-xs tracking-widest"
+              style={{
+                borderColor: "var(--lb-border-accent)",
+                color: "var(--lb-text-secondary)",
+                background: "var(--lb-surface)",
+              }}
+            >
+              // LOADING_ARCHIVE...
+            </span>
+          </div>
+
+          <div
+            className="border overflow-hidden"
+            style={{ borderColor: "var(--lb-border)" }}
+          >
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div
+                key={i}
+                className="flex items-stretch border-b"
+                style={{
+                  background: "var(--lb-card-bg)",
+                  borderColor: "var(--lb-border)",
+                }}
+              >
+                <div className="flex w-[100px] flex-shrink-0 items-center justify-center">
+                  <div
+                    className="h-12 w-12 rounded-sm animate-pulse"
+                    style={{ background: "var(--lb-border)" }}
+                  />
+                </div>
+                <div className="flex-1 py-5 px-6">
+                  <div
+                    className="h-7 w-48 rounded-sm animate-pulse mb-3"
+                    style={{ background: "var(--lb-border)" }}
+                  />
+                  <div className="flex gap-2 mb-4">
+                    <div
+                      className="h-4 w-16 rounded-sm animate-pulse"
+                      style={{ background: "var(--lb-border-accent)" }}
+                    />
+                    <div
+                      className="h-4 w-20 rounded-sm animate-pulse"
+                      style={{ background: "var(--lb-border-accent)" }}
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 gap-x-8">
+                    {[1, 2, 3, 4].map((j) => (
+                      <div key={j}>
+                        <div
+                          className="h-2 w-14 rounded-sm animate-pulse mb-2"
+                          style={{ background: "var(--lb-border-accent)" }}
+                        />
+                        <div
+                          className="h-6 w-10 rounded-sm animate-pulse"
+                          style={{ background: "var(--lb-border)" }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex w-[120px] flex-shrink-0 flex-col items-center justify-center">
+                  <div
+                    className="h-10 w-10 rounded-full animate-pulse"
+                    style={{ background: "var(--lb-border)" }}
+                  />
+                  <div
+                    className="h-3 w-14 mt-2 rounded-sm animate-pulse"
+                    style={{ background: "var(--lb-border-accent)" }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen px-6 md:px-10 py-8 md:py-12">
+      {/* Header */}
+      <ArchiveHeader />
+
+      {/* Date Filter */}
+      <DateFilter
+        days={days}
+        selectedDate={selectedDate}
+        onSelect={handleDateSelect}
+      />
+
+      {/* Weekly Stats Grid */}
+      <div className="mt-8">
+        <WeeklyStatsGrid stats={weeklyStats} />
+      </div>
+
+      {/* Data source indicator */}
+      {isMock && (
+        <div
+          className="mt-4 flex items-center gap-2 border px-4 py-2"
+          style={{
+            borderColor: "rgba(255, 180, 0, 0.3)",
+            background: "rgba(255, 180, 0, 0.05)",
+          }}
+        >
+          <span
+            className="inline-block h-2 w-2 rounded-full animate-pulse"
+            style={{ background: "#ffb400" }}
+          />
+          <span
+            className="font-mono text-[11px] tracking-wider"
+            style={{ color: "#ffb400" }}
+          >
+            [WARN] ARCHIVE_API_OFFLINE — DISPLAYING CACHED MOCK DATA
+          </span>
+        </div>
+      )}
+
+      {/* Archive Manifest Section */}
+      <div className="mt-10">
+        {/* Section label */}
+        <div className="mb-6 flex items-center justify-between">
+          <span
+            className="inline-block border px-4 py-2 font-mono text-xs tracking-widest"
+            style={{
+              borderColor: "var(--lb-border-accent)",
+              color: "var(--lb-text-secondary)",
+              background: "var(--lb-surface)",
+            }}
+          >
+            // ARCHIVE_MANIFEST — {selectedDate}
+          </span>
+
+          <span
+            className="font-mono text-[10px] tracking-wider"
+            style={{ color: "var(--lb-text-muted)" }}
+          >
+            [{totalUsers} ENTRIES]
+          </span>
+        </div>
+
+        {/* Entries */}
+        <div
+          className="border overflow-hidden"
+          style={{ borderColor: "var(--lb-border)" }}
+        >
+          {users.length === 0 ? (
+            <div
+              className="py-16 text-center"
+              style={{ background: "var(--lb-card-bg)" }}
+            >
+              <p
+                className="font-mono text-sm tracking-wider"
+                style={{ color: "var(--lb-text-muted)" }}
+              >
+                [NO_ARCHIVE_DATA]
+              </p>
+              <p
+                className="font-mono text-[10px] tracking-wider mt-2"
+                style={{ color: "var(--lb-text-dim)" }}
+              >
+                No snapshot recorded for {selectedDate}. Data is captured daily
+                at end of day.
+              </p>
+            </div>
+          ) : (
+            users.map((user, i) => (
+              <ManifestEntry
+                key={user.id ?? user.rank ?? i}
+                user={user}
+                rank={user.rank ?? i + 1}
+              />
+            ))
+          )}
+        </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div
+            className="flex items-center justify-between border border-t-0 px-5 py-3"
+            style={{
+              borderColor: "var(--lb-border)",
+              background: "var(--lb-card-bg)",
+            }}
+          >
+            <button
+              onClick={handlePrevPage}
+              disabled={page <= 1}
+              className="font-mono text-[11px] tracking-wider px-4 py-2 border transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+              style={{
+                borderColor: "var(--lb-border-accent)",
+                color: "var(--lb-text-secondary)",
+                background: "var(--lb-surface)",
+              }}
+              onMouseEnter={(e) => {
+                if (page > 1) {
+                  e.currentTarget.style.borderColor = "var(--lb-accent)";
+                  e.currentTarget.style.color = "var(--lb-accent)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--lb-border-accent)";
+                e.currentTarget.style.color = "var(--lb-text-secondary)";
+              }}
+            >
+              ← PREV_PAGE
+            </button>
+
+            <span
+              className="font-mono text-[10px] tracking-wider"
+              style={{ color: "var(--lb-text-muted)" }}
+            >
+              [PAGE {page} / {totalPages}]
+            </span>
+
+            <button
+              onClick={handleNextPage}
+              disabled={page >= totalPages}
+              className="font-mono text-[11px] tracking-wider px-4 py-2 border transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+              style={{
+                borderColor: "var(--lb-border-accent)",
+                color: "var(--lb-text-secondary)",
+                background: "var(--lb-surface)",
+              }}
+              onMouseEnter={(e) => {
+                if (page < totalPages) {
+                  e.currentTarget.style.borderColor = "var(--lb-accent)";
+                  e.currentTarget.style.color = "var(--lb-accent)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--lb-border-accent)";
+                e.currentTarget.style.color = "var(--lb-text-secondary)";
+              }}
+            >
+              NEXT_PAGE →
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Discord CTA Section */}
+      <DiscordCTA />
+
+      {/* Footer */}
+      <LeaderboardFooter />
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Sub-components
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Archive Header ── */
+function ArchiveHeader() {
+  return (
+    <header className="mb-8">
+      <h1
+        className="font-display text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-none"
+        style={{ color: "var(--lb-text)" }}
+      >
+        COMP_LEAGUE
+      </h1>
+
+      <div className="mt-2 inline-block">
+        <div
+          className="px-4 py-2 -skew-x-3"
+          style={{ background: "var(--lb-accent)" }}
+        >
+          <span
+            className="block skew-x-3 font-display text-3xl sm:text-4xl md:text-5xl font-black tracking-tight"
+            style={{ color: "var(--lb-accent-text)" }}
+          >
+            // ARCHIVE
+          </span>
+        </div>
+      </div>
+
+      <p
+        className="mt-4 font-mono text-[11px] tracking-wider max-w-xl"
+        style={{ color: "var(--lb-text-muted)" }}
+      >
+        Browse past leaderboard snapshots from the previous 7 days. Select a
+        date below to view that day&apos;s rankings.
+      </p>
+    </header>
+  );
+}
+
+/* ── Date Filter ── */
+function DateFilter({
+  days,
+  selectedDate,
+  onSelect,
+}: {
+  days: { key: string; label: string; date: Date }[];
+  selectedDate: string;
+  onSelect: (key: string) => void;
+}) {
+  return (
+    <div
+      className="border overflow-hidden"
+      style={{ borderColor: "var(--lb-border)" }}
+    >
+      {/* Filter header */}
+      <div
+        className="flex items-center gap-2 px-4 py-2.5 border-b"
+        style={{
+          background: "var(--lb-surface)",
+          borderColor: "var(--lb-border)",
+        }}
+      >
+        <Calendar
+          size={14}
+          style={{ color: "var(--lb-accent)" }}
+        />
+        <span
+          className="font-mono text-[10px] tracking-widest uppercase"
+          style={{ color: "var(--lb-text-muted)" }}
+        >
+          SELECT DATE
+        </span>
+        <span
+          className="font-mono text-[10px] tracking-wider ml-auto"
+          style={{ color: "var(--lb-text-dim)" }}
+        >
+          [LAST 7 DAYS]
+        </span>
+      </div>
+
+      {/* Date buttons */}
+      <div
+        className="flex overflow-x-auto"
+        style={{ background: "var(--lb-card-bg)" }}
+      >
+        {days.map(({ key, label }, idx) => {
+          const isSelected = key === selectedDate;
+          return (
+            <button
+              key={key}
+              onClick={() => onSelect(key)}
+              className="relative flex-1 min-w-[120px] px-4 py-4 font-mono text-center transition-all cursor-pointer"
+              style={{
+                background: isSelected
+                  ? "var(--lb-card-highlight-bg)"
+                  : "transparent",
+                borderRight:
+                  idx < days.length - 1
+                    ? "1px solid var(--lb-border)"
+                    : "none",
+                borderBottom: isSelected
+                  ? "2px solid var(--lb-accent)"
+                  : "2px solid transparent",
+              }}
+              onMouseEnter={(e) => {
+                if (!isSelected) {
+                  e.currentTarget.style.background = "var(--lb-entry-hover)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isSelected) {
+                  e.currentTarget.style.background = "transparent";
+                }
+              }}
+            >
+              {/* Day index */}
+              <span
+                className="block text-[9px] tracking-widest mb-1"
+                style={{
+                  color: isSelected
+                    ? "var(--lb-accent)"
+                    : "var(--lb-text-dim)",
+                }}
+              >
+                DAY-{String(idx + 1).padStart(2, "0")}
+              </span>
+
+              {/* Date label */}
+              <span
+                className="block text-[11px] tracking-wider font-bold"
+                style={{
+                  color: isSelected
+                    ? "var(--lb-accent)"
+                    : "var(--lb-text-secondary)",
+                }}
+              >
+                {label.toUpperCase()}
+              </span>
+
+              {/* Date key */}
+              <span
+                className="block text-[9px] tracking-wider mt-1"
+                style={{
+                  color: isSelected
+                    ? "var(--lb-accent)"
+                    : "var(--lb-text-dim)",
+                  opacity: isSelected ? 0.7 : 1,
+                }}
+              >
+                {key}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ── Weekly Stats Grid ── */
+function WeeklyStatsGrid({ stats }: { stats: WeeklyStats }) {
+  return (
+    <div
+      className="grid grid-cols-2 lg:grid-cols-4 gap-px"
+      style={{ background: "var(--lb-border)" }}
+    >
+      {WEEKLY_CARD_CONFIG.map(
+        ({ sysCode, label, key, icon: Icon, highlight }) => (
+          <div
+            key={sysCode}
+            className="relative overflow-hidden p-5"
+            style={{
+              background: highlight
+                ? "var(--lb-card-highlight-bg)"
+                : "var(--lb-card-bg)",
+              borderLeft: highlight
+                ? "3px solid var(--lb-accent)"
+                : "3px solid transparent",
+            }}
+          >
+            {/* System Code + Icon */}
+            <div className="flex items-center justify-between mb-3">
+              <span
+                className="font-mono text-[10px] tracking-wider"
+                style={{ color: "var(--lb-text-muted)" }}
+              >
+                [{sysCode}]
+              </span>
+              <Icon
+                size={16}
+                style={{
+                  color: highlight
+                    ? "var(--lb-accent)"
+                    : "var(--lb-text-muted)",
+                }}
+              />
+            </div>
+
+            {/* Value */}
+            <p
+              className="font-display text-3xl lg:text-4xl font-bold tracking-tight"
+              style={{
+                color: highlight ? "var(--lb-accent)" : "var(--lb-text)",
+              }}
+            >
+              {stats[key].toLocaleString()}
+            </p>
+
+            {/* Label */}
+            <p
+              className="font-mono text-[10px] tracking-widest mt-2 uppercase"
+              style={{ color: "var(--lb-text-muted)" }}
+            >
+              {label}
+            </p>
+          </div>
+        )
+      )}
+    </div>
+  );
+}
+
+/* ── Discord CTA Section ── */
+function DiscordCTA() {
+  return (
+    <div
+      className="mt-10 border overflow-hidden"
+      style={{ borderColor: "var(--lb-border)" }}
+    >
+      {/* Section label */}
+      <div
+        className="flex items-center gap-2 px-4 py-2.5 border-b"
+        style={{
+          background: "var(--lb-surface)",
+          borderColor: "var(--lb-border)",
+        }}
+      >
+        <Archive size={14} style={{ color: "var(--lb-accent)" }} />
+        <span
+          className="font-mono text-[10px] tracking-widest uppercase"
+          style={{ color: "var(--lb-text-muted)" }}
+        >
+          EXTENDED ARCHIVE
+        </span>
+      </div>
+
+      {/* Content */}
+      <div
+        className="px-6 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
+        style={{ background: "var(--lb-card-bg)" }}
+      >
+        <div className="max-w-lg">
+          <h3
+            className="font-display text-xl md:text-2xl font-bold tracking-tight mb-2"
+            style={{ color: "var(--lb-text)" }}
+          >
+            NEED OLDER DATA?
+          </h3>
+          <p
+            className="font-mono text-[11px] tracking-wider leading-relaxed"
+            style={{ color: "var(--lb-text-muted)" }}
+          >
+            This archive only shows the past 7 days. For leaderboard data older
+            than one week, join our Discord server where we maintain a
+            comprehensive historical record with weekly and monthly snapshots.
+          </p>
+        </div>
+
+        <a
+          href={DISCORD_LINK}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 border px-5 py-3 font-mono text-xs font-bold tracking-wider transition-all flex-shrink-0"
+          style={{
+            borderColor: "var(--lb-accent)",
+            color: "var(--lb-accent)",
+            background: "transparent",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "var(--lb-accent)";
+            e.currentTarget.style.color = "var(--lb-accent-text)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.color = "var(--lb-accent)";
+          }}
+        >
+          JOIN_DISCORD
+          <ExternalLink size={14} />
+        </a>
+      </div>
+
+      {/* Footer detail */}
+      <div
+        className="flex items-center gap-4 px-4 py-2 border-t"
+        style={{
+          background: "var(--lb-surface)",
+          borderColor: "var(--lb-border)",
+        }}
+      >
+        <span
+          className="font-mono text-[9px] tracking-wider"
+          style={{ color: "var(--lb-text-dim)" }}
+        >
+          [DISCORD_ARCHIVE] Monthly snapshots available • Weekly recaps posted
+          every Sunday
+        </span>
+        <ChevronRight
+          size={12}
+          style={{ color: "var(--lb-text-dim)" }}
+          className="ml-auto"
+        />
+      </div>
+    </div>
+  );
+}
