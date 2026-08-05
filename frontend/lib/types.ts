@@ -51,3 +51,26 @@ export interface LeaderboardApiResponse {
   leaderboard: LeaderboardUser[];
   stats: StatsOverview;
 }
+
+/**
+ * Weekly aggregate stats for the archive page.
+ */
+export interface WeeklyStats {
+  totalCfSolved: number;
+  totalLcSolved: number;
+  onlineUsers: number;
+  daysArchived: number;
+}
+
+/**
+ * Full API response shape from GET /api/archive?date=YYYY-MM-DD&page=N
+ */
+export interface ArchiveApiResponse {
+  success: boolean;
+  date: string;
+  page: number;
+  totalPages: number;
+  totalUsers: number;
+  leaderboard: LeaderboardUser[];
+  stats: StatsOverview;
+}
