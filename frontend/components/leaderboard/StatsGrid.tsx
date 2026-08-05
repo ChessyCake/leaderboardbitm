@@ -8,8 +8,8 @@ interface StatsGridProps {
 const CARD_CONFIG = [
   {
     sysCode: "SYS.01",
-    label: "STUDENTS ONLINE",
-    key: "studentsOnline" as const,
+    label: "ACTIVE TODAY",
+    key: "activeToday" as const,
     icon: Users,
     highlight: false,
   },
@@ -22,15 +22,15 @@ const CARD_CONFIG = [
   },
   {
     sysCode: "SYS.03",
-    label: "ACTIVE STREAKS",
-    key: "activeStreaks" as const,
+    label: "CF SOLVED TODAY",
+    key: "cfSolvedToday" as const,
     icon: Zap,
     highlight: false,
   },
   {
     sysCode: "SYS.04",
-    label: "TOTAL REG",
-    key: "totalRegistered" as const,
+    label: "LC SOLVED TODAY",
+    key: "lcSolvedToday" as const,
     icon: LayoutGrid,
     highlight: false,
   },

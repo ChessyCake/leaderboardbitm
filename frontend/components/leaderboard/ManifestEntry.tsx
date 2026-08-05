@@ -1,4 +1,4 @@
-import { Zap } from "lucide-react";
+import { Zap, Flame } from "lucide-react";
 import type { LeaderboardUser } from "@/lib/types";
 
 interface ManifestEntryProps {
@@ -6,28 +6,21 @@ interface ManifestEntryProps {
   rank: number;
 }
 
-function getTier(rank: number): string {
-  if (rank === 1) return "TIER_S";
-  if (rank <= 3) return "TIER_A";
-  if (rank <= 10) return "TIER_B";
-  return "TIER_C";
-}
 
-function getRole(rank: number): string | null {
-  if (rank === 1) return "SYS_ADMIN";
-  return null;
-}
+
+
 
 export default function ManifestEntry({ user, rank }: ManifestEntryProps) {
   const isFirst = rank === 1;
-  const tier = user.tier || getTier(rank);
-  const role = user.role || getRole(rank);
+  const tier = user.tier;
+  const role = user.role;
   const displayName =
+    user.name?.toUpperCase() ||
     user.codeforcesUsername?.toUpperCase().replace(/\s/g, "_") ||
-    user.name?.toUpperCase().replace(/\s/g, "_") ||
     "UNKNOWN";
   const userId = user.id ?? Math.floor(1000 + Math.random() * 9000);
   const rankStr = String(rank).padStart(2, "0");
+  const isActive = user.todaySolved > 0;
 
   return (
     <div
@@ -70,7 +63,7 @@ export default function ManifestEntry({ user, rank }: ManifestEntryProps) {
         {/* Top row: name + ID */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            {/* Username */}
+            {/* Real Name */}
             <h3
               className="font-display text-2xl md:text-3xl font-bold tracking-tight"
               style={{ color: "var(--lb-text)" }}
@@ -78,29 +71,22 @@ export default function ManifestEntry({ user, rank }: ManifestEntryProps) {
               {displayName}
             </h3>
 
-            {/* Tags */}
-            <div className="flex items-center gap-2 mt-2">
-              <span
-                className="inline-block border px-2 py-0.5 font-mono text-[10px] tracking-wider"
-                style={{
-                  borderColor: "var(--lb-tag-border)",
-                  color: "var(--lb-tag-text)",
-                }}
-              >
-                {tier}
-              </span>
-              {role && (
-                <span
-                  className="inline-block border px-2 py-0.5 font-mono text-[10px] tracking-wider"
-                  style={{
-                    borderColor: "var(--lb-tag-border)",
-                    color: "var(--lb-tag-text)",
-                  }}
-                >
-                  {role}
-                </span>
+            {/* Profile Links */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 font-mono text-[11px] tracking-wide" style={{ color: "var(--lb-text-secondary)" }}>
+              {user.codeforcesUsername && (
+                <a href={`https://codeforces.com/profile/${user.codeforcesUsername}`} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                  CF: @{user.codeforcesUsername}
+                </a>
+              )}
+              {user.leetcodeUsername && (
+                <a href={`https://leetcode.com/u/${user.leetcodeUsername}/`} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                  LC: @{user.leetcodeUsername}
+                </a>
               )}
             </div>
+
+            {/* Tags */}
+          
           </div>
 
           {/* ID label */}
@@ -113,20 +99,10 @@ export default function ManifestEntry({ user, rank }: ManifestEntryProps) {
         </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-3 mt-5">
+        <div className="grid grid-cols-3 sm:grid-cols-3 gap-x-8 gap-y-3 mt-5">
           <StatField label="SOLVED (TODAY)" value={user.todaySolved} />
-          <StatField
-            label="SOLVED (TOT)"
-            value={user.totalSolved.toLocaleString()}
-          />
-          <StatField
-            label="CF RATING"
-            value={user.cfRating ?? "—"}
-          />
-          <StatField
-            label="CF MAX"
-            value={user.cfMaxRating ?? "—"}
-          />
+          <StatField label="CF SOLVED TODAY" value={user.cfSolvedToday} />
+          <StatField label="LC SOLVED TODAY" value={user.lcSolvedToday} />
         </div>
       </div>
 
@@ -136,15 +112,15 @@ export default function ManifestEntry({ user, rank }: ManifestEntryProps) {
       >
         {/* Lightning icon */}
         <div
-          className="flex h-10 w-10 items-center justify-center rounded-full border"
+          className="flex h-10 w-10 items-center justify-center rounded-full border transition-colors"
           style={{
-            borderColor: isFirst
+            borderColor: isActive
               ? "var(--lb-accent)"
               : "var(--lb-border-accent)",
-            background: isFirst
+            background: isActive
               ? "var(--lb-accent)"
               : "var(--lb-surface)",
-            color: isFirst
+            color: isActive
               ? "var(--lb-accent-text)"
               : "var(--lb-text-muted)",
           }}
@@ -152,17 +128,27 @@ export default function ManifestEntry({ user, rank }: ManifestEntryProps) {
           <Zap size={18} />
         </div>
 
-        {/* Days count */}
-        <span
-          className="mt-2 font-mono text-[11px] font-bold tracking-wider"
-          style={{
-            color: isFirst
-              ? "var(--lb-accent)"
-              : "var(--lb-text-secondary)",
-          }}
-        >
-          {user.streak} DAYS
-        </span>
+        {/* Streaks */}
+        <div className="mt-3 flex flex-col items-center gap-1.5">
+          {/* CF Streak */}
+          <div
+            className="flex items-center gap-1.5 font-mono text-xs font-bold tracking-wider"
+            style={{ color: user.cfStreak > 0 ? "var(--lb-text)" : "var(--lb-text-muted)" }}
+          >
+            <span className="text-[9px] uppercase">CF</span>
+            <Flame size={13} style={{ color: user.cfStreak > 0 ? "var(--lb-accent)" : "currentColor" }} />
+            <span>{user.cfStreak}</span>
+          </div>
+          {/* LC Streak */}
+          <div
+            className="flex items-center gap-1.5 font-mono text-xs font-bold tracking-wider"
+            style={{ color: user.lcStreak > 0 ? "var(--lb-text)" : "var(--lb-text-muted)" }}
+          >
+            <span className="text-[9px] uppercase">LC</span>
+            <Flame size={13} style={{ color: user.lcStreak > 0 ? "var(--lb-accent)" : "currentColor" }} />
+            <span>{user.lcStreak}</span>
+          </div>
+        </div>
       </div>
     </div>
   );

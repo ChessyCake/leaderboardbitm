@@ -13,91 +13,27 @@ import StatsGrid from "@/components/leaderboard/StatsGrid";
 import ManifestEntry from "@/components/leaderboard/ManifestEntry";
 import LeaderboardFooter from "@/components/leaderboard/LeaderboardFooter";
 
-/* ── Fallback mock data (used when backend is unreachable) ── */
-const MOCK_USERS: LeaderboardUser[] = [
-  {
-    rank: 1,
-    name: "Ghost Proto",
-    avatar: "",
-    codeforcesUsername: "GHOST_PROTO",
-    streak: 42,
-    todaySolved: 14,
-    totalSolved: 1402,
-    cfRating: 2450,
-    tier: "TIER_S",
-    role: "SYS_ADMIN",
-    id: 8842,
-  },
-  {
-    rank: 2,
-    name: "Null Ptr",
-    avatar: "",
-    codeforcesUsername: "NULL_PTR",
-    streak: 21,
-    todaySolved: 8,
-    totalSolved: 1120,
-    cfRating: 2100,
-    tier: "TIER_A",
-    id: 7109,
-  },
-  {
-    rank: 3,
-    name: "Cyber Knight",
-    avatar: "",
-    codeforcesUsername: "CYBER_KNIGHT",
-    streak: 15,
-    todaySolved: 12,
-    totalSolved: 980,
-    cfRating: 1950,
-    tier: "TIER_A",
-    id: 9021,
-  },
-  {
-    rank: 4,
-    name: "Byte Storm",
-    avatar: "",
-    codeforcesUsername: "BYTE_STORM",
-    streak: 9,
-    todaySolved: 6,
-    totalSolved: 870,
-    cfRating: 1800,
-    tier: "TIER_B",
-    id: 4412,
-  },
-  {
-    rank: 5,
-    name: "Hex Venom",
-    avatar: "",
-    codeforcesUsername: "HEX_VENOM",
-    streak: 7,
-    todaySolved: 5,
-    totalSolved: 650,
-    cfRating: 1700,
-    tier: "TIER_B",
-    id: 3301,
-  },
-];
-
-const MOCK_STATS: StatsOverview = {
-  studentsOnline: 142,
-  solvedToday: 1204,
-  activeStreaks: 89,
-  totalRegistered: 2450,
+const INITIAL_STATS: StatsOverview = {
+  activeToday: 0,
+  solvedToday: 0,
+  cfSolvedToday: 0,
+  lcSolvedToday: 0,
 };
 
 export default function LeaderboardPage() {
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
-  const [stats, setStats] = useState<StatsOverview>(MOCK_STATS);
+  const [stats, setStats] = useState<StatsOverview>(INITIAL_STATS);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
-  const [isMock, setIsMock] = useState(false);
 
   const fetchLeaderboard = useCallback(async (pageNum: number) => {
     setLoading(true);
+    setError(null);
     try {
-      const res = await api(`/api/leaderboard?page=${pageNum}`);
+      const res = await api(`/api/v1/leaderboard?page=${pageNum}`);
 
       if (!res.ok) throw new Error("Failed to fetch leaderboard");
 
@@ -119,6 +55,12 @@ export default function LeaderboardPage() {
           streak: u.streak ?? 0,
           todaySolved: u.todaySolved ?? 0,
           totalSolved: u.totalSolved ?? 0,
+          cfSolvedToday: u.cfSolvedToday ?? 0,
+          cfSolved: u.cfSolved ?? 0,
+          cfStreak: u.cfStreak ?? 0,
+          lcSolvedToday: u.lcSolvedToday ?? 0,
+          lcSolved: u.lcSolved ?? 0,
+          lcStreak: u.lcStreak ?? 0,
           cfRating: u.cfRating,
           cfMaxRating: u.cfMaxRating,
           cfRank: u.cfRank,
@@ -129,23 +71,15 @@ export default function LeaderboardPage() {
       setPage(json.page);
       setTotalPages(json.totalPages);
       setTotalUsers(json.totalUsers);
-      setIsMock(false);
 
       /* Use the aggregate stats from the API */
       if (json.stats) {
         setStats(json.stats);
       }
-    } catch (err) {
-    console.error(err);
-
-    console.warn("Backend unavailable — using mock data");
-
-    setUsers(MOCK_USERS);
-    setStats(MOCK_STATS);
-    setTotalPages(1);
-    setTotalUsers(MOCK_USERS.length);
-    setIsMock(true);
-} finally {
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || "Failed to fetch data");
+    } finally {
       setLoading(false);
     }
   }, []);
@@ -280,6 +214,70 @@ export default function LeaderboardPage() {
     );
   }
 
+  /* ── Cyberpunk Error screen ── */
+  if (error) {
+    return (
+      <div
+        className="min-h-screen px-6 md:px-10 py-8 md:py-12 flex flex-col justify-center items-center"
+        style={{ background: "var(--lb-bg)" }}
+      >
+        <div
+          className="border-2 p-8 max-w-md w-full text-center relative overflow-hidden"
+          style={{
+            borderColor: "rgba(239, 68, 68, 0.4)",
+            background: "rgba(239, 68, 68, 0.05)",
+          }}
+        >
+          <div className="flex justify-center mb-6">
+            <span
+              className="inline-block border-2 px-4 py-2 font-mono text-sm tracking-widest animate-pulse"
+              style={{
+                borderColor: "rgb(239, 68, 68)",
+                color: "rgb(239, 68, 68)",
+                background: "rgba(239, 68, 68, 0.1)",
+              }}
+            >
+              [ERROR: SYSTEM_FAILURE]
+            </span>
+          </div>
+
+          <h2
+            className="font-display text-2xl md:text-3xl font-bold tracking-tight mb-4"
+            style={{ color: "var(--lb-text)" }}
+          >
+            UNABLE TO FETCH DATA
+          </h2>
+
+          <p
+            className="font-mono text-xs tracking-wider mb-8 leading-relaxed"
+            style={{ color: "var(--lb-text-secondary)" }}
+          >
+            We fell into some errors while connecting to the core server streams. Please verify your connection or try again.
+          </p>
+
+          <button
+            onClick={() => fetchLeaderboard(page)}
+            className="font-mono text-xs tracking-widest px-6 py-3 border-2 transition-all cursor-pointer bg-transparent"
+            style={{
+              borderColor: "rgb(239, 68, 68)",
+              color: "rgb(239, 68, 68)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgb(239, 68, 68)";
+              e.currentTarget.style.color = "black";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "rgb(239, 68, 68)";
+            }}
+          >
+            RETRY_STREAM_CONNECTION
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen px-6 md:px-10 py-8 md:py-12">
       {/* Header */}
@@ -289,28 +287,6 @@ export default function LeaderboardPage() {
       <div className="mt-8">
         <StatsGrid stats={stats} />
       </div>
-
-      {/* Data source indicator */}
-      {isMock && (
-        <div
-          className="mt-4 flex items-center gap-2 border px-4 py-2"
-          style={{
-            borderColor: "rgba(255, 180, 0, 0.3)",
-            background: "rgba(255, 180, 0, 0.05)",
-          }}
-        >
-          <span
-            className="inline-block h-2 w-2 rounded-full animate-pulse"
-            style={{ background: "#ffb400" }}
-          />
-          <span
-            className="font-mono text-[11px] tracking-wider"
-            style={{ color: "#ffb400" }}
-          >
-            [WARN] BACKEND_OFFLINE — DISPLAYING CACHED MOCK DATA
-          </span>
-        </div>
-      )}
 
       {/* Active Manifest Section */}
       <div className="mt-10">

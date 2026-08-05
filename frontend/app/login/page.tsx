@@ -6,7 +6,9 @@ import { api } from "@/lib/api";
 
 import { FcGoogle } from "react-icons/fc";
 
-export default function LoginPage() {
+import { Suspense } from "react";
+
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
@@ -57,27 +59,26 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-background relative bg-dots p-6">
       <div className="relative w-full max-w-[500px] h-[500px]">
-        
-     
+
+
         <div className="absolute inset-0 translate-x-3 translate-y-3 bg-foreground hidden md:block z-0" />
 
 
         <div className="absolute inset-0 bg-background border-2 border-foreground z-10 flex flex-col">
-          
-      
+
+
           <div className="h-12 bg-foreground text-background flex items-center px-4 font-mono font-bold text-sm tracking-wider shrink-0">
             AUTH_GATEWAY
           </div>
 
-  
+
           <div className="flex-1 p-8 flex flex-col">
             <div className="max-w-[360px] space-y-6">
-              
-    
-              <p 
-                className={`w-fit px-3 py-1 text-xs font-mono font-bold text-black uppercase tracking-widest ${
-                  error ? "bg-red-500" : "bg-[#ccff00]"
-                }`}
+
+
+              <p
+                className={`w-fit px-3 py-1 text-xs font-mono font-bold text-black uppercase tracking-widest ${error ? "bg-red-500" : "bg-[#ccff00]"
+                  }`}
               >
                 {error ? "AUTHENTICATION_FAILED" : "AWAITING CREDENTIALS"}
               </p>
@@ -92,7 +93,7 @@ export default function LoginPage() {
                   Get access using your @bitmesra.ac.in account.
                 </p>
 
-            
+
                 {error === "bit-email" && (
                   <div className="border-l-4 border-red-500 bg-red-500/10 p-3 mt-4">
                     <p className="text-red-500 font-mono text-xs font-bold uppercase">
@@ -109,7 +110,7 @@ export default function LoginPage() {
                 )}
               </div>
 
-           
+
               <div className="relative h-14 w-full sm:w-fit mt-8">
                 <div className="absolute inset-0 translate-x-2 translate-y-2 bg-foreground hidden sm:block" />
 
@@ -130,5 +131,13 @@ export default function LoginPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }

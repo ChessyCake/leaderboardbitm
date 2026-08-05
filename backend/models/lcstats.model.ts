@@ -14,21 +14,6 @@ const leetcodeSchema = new mongoose.Schema(
       default: 0,
     },
 
-    easySolved: {
-      type: Number,
-      default: 0,
-    },
-
-    mediumSolved: {
-      type: Number,
-      default: 0,
-    },
-
-    hardSolved: {
-      type: Number,
-      default: 0,
-    },
-
     todaySolved: {
       type: Number,
       default: 0,
@@ -39,14 +24,9 @@ const leetcodeSchema = new mongoose.Schema(
       default: 0,
     },
 
-    contestRating: {
-      type: Number,
-      default: 0,
-    },
-
-    contestRanking: {
-      type: Number,
-      default: 0,
+    lastSubmissionID: {
+      type: String,
+      default: null,
     },
 
     lastSubmissionTime: {

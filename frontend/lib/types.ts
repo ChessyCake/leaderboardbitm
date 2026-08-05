@@ -11,6 +11,12 @@ export interface LeaderboardUser {
   streak: number;
   todaySolved: number;
   totalSolved: number;
+  cfSolvedToday: number;
+  cfSolved: number;
+  cfStreak: number;
+  lcSolvedToday: number;
+  lcSolved: number;
+  lcStreak: number;
   /** Codeforces current rating (from CF model `rating`) */
   cfRating?: number;
   /** Codeforces max rating */
@@ -28,10 +34,10 @@ export interface LeaderboardUser {
  * the leaderboard API response.
  */
 export interface StatsOverview {
-  studentsOnline: number;
+  activeToday: number;
   solvedToday: number;
-  activeStreaks: number;
-  totalRegistered: number;
+  cfSolvedToday: number;
+  lcSolvedToday: number;
 }
 
 /**

@@ -1,13 +1,10 @@
 import { Request, Response } from "express";
 import Codeforces from "../models/cfstats.model";
-import User from "../models/users.model";
+import User from "../models/users.model"; 
+import LeetCode from "../models/lcstats.model";
 
-export const getLeaderboard = async (
-    req: Request,
-    res: Response
-) => {
+export const getLeaderboard = async (req: Request, res: Response) => {
     try {
-
         const page = Number(req.query.page) || 1;
         const limit = 25;
         const skip = (page - 1) * limit;
@@ -27,40 +24,40 @@ export const getLeaderboard = async (
                 "name avatar codeforces_username leetcode_username"
             );
 
-        const data = leaderboard.map((cf, index) => ({
+        const data = await Promise.all(
+            leaderboard.map(async (cf, index) => {
+                const userId = (cf.user as any)?._id;
+                let lcStats = null;
+                if (userId) {
+                    lcStats = await LeetCode.findOne({ user: userId });
+                }
 
-            rank: skip + index + 1,
+                return {
+                    rank: skip + index + 1,
+                    name: (cf.user as any)?.name || "Unknown",
+                    avatar: (cf.user as any)?.avatar || "https://api.dicebear.com/10.x/lorelei/svg",
+                    codeforcesUsername: (cf.user as any)?.codeforces_username || "",
+                    leetcodeUsername: (cf.user as any)?.leetcode_username || "",
+                    streak: cf.streak,
+                    todaySolved: cf.todaySolved + (lcStats?.todaySolved || 0),
+                    totalSolved: cf.totalSolved + (lcStats?.totalSolved || 0),
+                    cfSolvedToday: cf.todaySolved,
+                    cfSolved: cf.totalSolved,
+                    cfStreak: cf.streak,
+                    lcSolvedToday: lcStats?.todaySolved || 0,
+                    lcSolved: lcStats?.totalSolved || 0,
+                    lcStreak: lcStats?.streak || 0,
+                };
+            })
+        );
 
-            name: (cf.user as any)?.name || "Unknown",
-
-            avatar: (cf.user as any)?.avatar || "",
-
-            codeforcesUsername:
-                (cf.user as any)?.codeforces_username || "",
-
-            leetcodeUsername:
-                (cf.user as any)?.leetcode_username || "",
-
-            streak: cf.streak,
-
-            todaySolved: cf.todaySolved,
-
-            totalSolved: cf.totalSolved,
-
-            cfRating: cf.rating,
-
-            cfMaxRating: cf.maxRating,
-
-            cfRank: cf.rank,
-
-        }));
-
-        /* ── Aggregate stats for the dashboard cards ── */
-        const [statsAgg] = await Codeforces.aggregate([
+    
+        const [cfStats] = await Codeforces.aggregate([
             {
                 $group: {
                     _id: null,
                     solvedToday: { $sum: "$todaySolved" },
+                    totalSolved: { $sum: "$totalSolved" },
                     activeStreaks: {
                         $sum: { $cond: [{ $gt: ["$streak", 0] }, 1, 0] },
                     },
@@ -68,42 +65,54 @@ export const getLeaderboard = async (
             },
         ]);
 
+        const [lcStats] = await LeetCode.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    solvedToday: { $sum: "$todaySolved" },
+                    totalSolved: { $sum: "$totalSolved" },
+                    activeStreaks: {
+                        $sum: { $cond: [{ $gt: ["$streak", 0] }, 1, 0] },
+                    },
+                },
+            },
+        ]);
+
+        const activeCFUsers = await Codeforces.find({ todaySolved: { $gt: 0 } }).distinct("user");
+        const activeLCUsers = await LeetCode.find({ todaySolved: { $gt: 0 } }).distinct("user");
+        const activeUsersSet = new Set([
+            ...activeCFUsers.map(id => id.toString()),
+            ...activeLCUsers.map(id => id.toString())
+        ]);
+
         const studentsOnline = await User.countDocuments({
-            codeforces_username: { $ne: "" },
+            $or: [
+                { codeforces_username: { $ne: "" } },
+                { leetcode_username: { $ne: "" } }
+            ]
         });
 
+        const stats = {
+            activeToday: activeUsersSet.size,
+            solvedToday: (cfStats?.solvedToday || 0) + (lcStats?.solvedToday || 0),
+            cfSolvedToday: cfStats?.solvedToday || 0,
+            lcSolvedToday: lcStats?.solvedToday || 0,
+        };
+
         return res.status(200).json({
-
             success: true,
-
             page,
-
             totalPages: Math.ceil(totalUsers / limit),
-
             totalUsers,
-
             leaderboard: data,
-
-            stats: {
-                studentsOnline,
-                solvedToday: statsAgg?.solvedToday ?? 0,
-                activeStreaks: statsAgg?.activeStreaks ?? 0,
-                totalRegistered: totalUsers,
-            },
-
+            stats,
         });
 
     } catch (err) {
-
         console.error(err);
-
         return res.status(500).json({
-
             success: false,
-
             message: "Internal Server Error"
-
         });
-
     }
 };

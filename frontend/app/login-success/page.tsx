@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 
-export default function LoginSuccess() {
+function LoginSuccessContent() {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -48,5 +48,17 @@ export default function LoginSuccess() {
     <div className="flex min-h-screen items-center justify-center">
       Logging you in...
     </div>
+  );
+}
+
+export default function LoginSuccess() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center">
+        Loading...
+      </div>
+    }>
+      <LoginSuccessContent />
+    </Suspense>
   );
 }

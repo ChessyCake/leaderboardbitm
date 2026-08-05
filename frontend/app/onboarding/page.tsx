@@ -20,7 +20,7 @@ export default function Onboarding() {
     setLoading(true);
 
     try {
-      const res = await api("/onboarding", {
+      const res = await api("/api/v1/onboarding", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

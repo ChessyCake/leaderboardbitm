@@ -8,27 +8,7 @@ const cfSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-
-    rating: {
-      type: Number,
-      default: 0,
-    },
-
-    maxRating: {
-      type: Number,
-      default: 0,
-    },
-
-    rank: {
-      type: String,
-      default: "",
-    },
-
-    maxRank: {
-      type: String,
-      default: "",
-    },
-
+    
     totalSolved: {
       type: Number,
       default: 0,
@@ -65,9 +45,5 @@ const cfSchema = new mongoose.Schema(
   }
 );
 
-cfSchema.index({ todaySolved: -1 });
-cfSchema.index({ totalSolved: -1 });
-cfSchema.index({ rating: -1 });
-cfSchema.index({ streak: -1 });
 
 export default  mongoose.model("Codeforces", cfSchema);
