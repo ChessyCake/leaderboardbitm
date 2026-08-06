@@ -12,6 +12,9 @@ import LeaderboardHeader from "@/components/leaderboard/LeaderboardHeader";
 import StatsGrid from "@/components/leaderboard/StatsGrid";
 import ManifestEntry from "@/components/leaderboard/ManifestEntry";
 import LeaderboardFooter from "@/components/leaderboard/LeaderboardFooter";
+import { useRouter } from "next/navigation";
+
+
 
 const INITIAL_STATS: StatsOverview = {
   activeToday: 0,
@@ -21,6 +24,7 @@ const INITIAL_STATS: StatsOverview = {
 };
 
 export default function LeaderboardPage() {
+  const router = useRouter();
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
   const [stats, setStats] = useState<StatsOverview>(INITIAL_STATS);
   const [loading, setLoading] = useState(true);
@@ -28,6 +32,27 @@ export default function LeaderboardPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
+
+
+  useEffect(() => {
+  const check = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
+
+    const res = await api("/auth/me");
+
+    if (!res.ok) {
+      localStorage.removeItem("token");
+      router.replace("/login");
+    }
+  };
+
+  check();
+}, [router]);
 
   const fetchLeaderboard = useCallback(async (pageNum: number) => {
     setLoading(true);

@@ -52,8 +52,8 @@ function LoginContent() {
     check();
   }, [router]);
   const login = () => {
-  console.log(process.env.NEXT_PUBLIC_API_URL);
-  alert(process.env.NEXT_PUBLIC_API_URL);
+  // console.log(process.env.NEXT_PUBLIC_API_URL);
+  // alert(process.env.NEXT_PUBLIC_API_URL);
 
   window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
 };
