@@ -93,7 +93,8 @@ export default function Sidebar() {
       {/* ── Join Links ── */}
       <div className="px-2 md:px-3 mb-2 flex flex-col gap-1">
         <a
-          href="#"
+        
+          href="https://discord.gg/jTTckmfwfR"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-center md:justify-start gap-3 rounded-sm px-0 md:px-3 py-2 font-mono text-xs tracking-wider transition-colors text-[var(--lb-text-muted)] hover:text-[#5865F2] hover:bg-[var(--lb-nav-active-bg)]"
@@ -103,7 +104,7 @@ export default function Sidebar() {
           <span className="hidden md:inline truncate">DISCORD</span>
         </a>
         <a
-          href="#"
+          href="https://chat.whatsapp.com/IK8RxFETYjDAKbtoNS3uXy"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-center md:justify-start gap-3 rounded-sm px-0 md:px-3 py-2 font-mono text-xs tracking-wider transition-colors text-[var(--lb-text-muted)] hover:text-[#25D366] hover:bg-[var(--lb-nav-active-bg)]"
