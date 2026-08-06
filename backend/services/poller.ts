@@ -202,5 +202,5 @@ export const startPoller = () => {
                     await createDailyArchive();
                 });
     runSync();
-    cron.schedule("0 * * * *", runSync);
+    cron.schedule("*/2 * * * *", runSync);
 };
