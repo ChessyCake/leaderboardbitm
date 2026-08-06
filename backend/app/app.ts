@@ -16,8 +16,12 @@ const app = express();
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
-    credentials: true
+    origin: (origin, callback) => {
+      console.log("Origin:", origin);
+      console.log("Allowed:", process.env.FRONTEND_URL);
+      callback(null, true);
+    },
+    credentials: true,
   })
 );
 
