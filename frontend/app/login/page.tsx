@@ -51,10 +51,16 @@ function LoginContent() {
 
     check();
   }, [router]);
-
   const login = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
-  };
+  console.log(process.env.NEXT_PUBLIC_API_URL);
+  alert(process.env.NEXT_PUBLIC_API_URL);
+
+  window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+};
+
+  // const login = () => {
+  //   window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+  // };
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-background relative bg-dots p-4 sm:p-6 overflow-hidden">
