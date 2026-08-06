@@ -40,7 +40,7 @@ function LoginContent() {
         const user = await res.json();
 
         if (user.onboarded) {
-          router.replace("/dashboard");
+          router.replace("/leaderboard");
         } else {
           router.replace("/onboarding");
         }
@@ -57,8 +57,8 @@ function LoginContent() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-background relative bg-dots p-6">
-      <div className="relative w-full max-w-[500px] h-[500px]">
+    <main className="min-h-screen flex items-center justify-center bg-background relative bg-dots p-4 sm:p-6 overflow-hidden">
+      <div className="relative w-full max-w-[500px] h-auto min-h-[450px] sm:h-[500px]">
 
 
         <div className="absolute inset-0 translate-x-3 translate-y-3 bg-foreground hidden md:block z-0" />
@@ -72,7 +72,7 @@ function LoginContent() {
           </div>
 
 
-          <div className="flex-1 p-8 flex flex-col">
+          <div className="flex-1 p-5 sm:p-8 flex flex-col">
             <div className="max-w-[360px] space-y-6">
 
 
@@ -83,8 +83,8 @@ function LoginContent() {
                 {error ? "AUTHENTICATION_FAILED" : "AWAITING CREDENTIALS"}
               </p>
 
-              <div className="space-y-4">
-                <h1 className="text-6xl font-black leading-[0.9] text-foreground tracking-tighter uppercase">
+              <div className="space-y-3 sm:space-y-4">
+                <h1 className="text-5xl sm:text-6xl font-black leading-[0.9] text-foreground tracking-tighter uppercase break-words">
                   SYSTEM_<br />
                   ACCESS
                 </h1>
@@ -111,7 +111,7 @@ function LoginContent() {
               </div>
 
 
-              <div className="relative h-14 w-full sm:w-fit mt-8">
+              <div className="relative h-14 w-full sm:w-fit mt-6 sm:mt-8 mb-4 sm:mb-0">
                 <div className="absolute inset-0 translate-x-2 translate-y-2 bg-foreground hidden sm:block" />
 
                 <button

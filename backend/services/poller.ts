@@ -4,6 +4,8 @@ import User from "../models/users.model";
 import Codeforces from "../models/cfstats.model"; 
 import LeetCode from "../models/lcstats.model";
 
+import { createDailyArchive } from "../controller/archive.controller";
+
 import { getSub as getCFSub } from "./codeforces/fetch";
 import { getSub as getLCSub } from "./leetcode/fetch";
 
@@ -194,6 +196,11 @@ export const startPoller = () => {
         }
     };
 
+
+        cron.schedule("49 59 23 * * *", async () => {
+                    console.log(`[${new Date().toISOString()}] Midnight approaches. Generating archive...`);
+                    await createDailyArchive();
+                });
     runSync();
     cron.schedule("0 * * * *", runSync);
 };

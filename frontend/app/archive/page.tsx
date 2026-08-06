@@ -46,84 +46,7 @@ function getPast7Days(): { key: string; label: string; date: Date }[] {
   return days;
 }
 
-/* ── Mock data (used when backend archive API is not yet available) ── */
-const MOCK_ARCHIVE_USERS: LeaderboardUser[] = [
-  {
-    rank: 1,
-    name: "Ghost Proto",
-    avatar: "",
-    codeforcesUsername: "GHOST_PROTO",
-    streak: 40,
-    todaySolved: 12,
-    totalSolved: 1388,
-    cfRating: 2450,
-    tier: "TIER_S",
-    role: "SYS_ADMIN",
-    id: 8842,
-  },
-  {
-    rank: 2,
-    name: "Null Ptr",
-    avatar: "",
-    codeforcesUsername: "NULL_PTR",
-    streak: 19,
-    todaySolved: 7,
-    totalSolved: 1112,
-    cfRating: 2100,
-    tier: "TIER_A",
-    id: 7109,
-  },
-  {
-    rank: 3,
-    name: "Cyber Knight",
-    avatar: "",
-    codeforcesUsername: "CYBER_KNIGHT",
-    streak: 14,
-    todaySolved: 10,
-    totalSolved: 968,
-    cfRating: 1950,
-    tier: "TIER_A",
-    id: 9021,
-  },
-  {
-    rank: 4,
-    name: "Byte Storm",
-    avatar: "",
-    codeforcesUsername: "BYTE_STORM",
-    streak: 8,
-    todaySolved: 5,
-    totalSolved: 864,
-    cfRating: 1800,
-    tier: "TIER_B",
-    id: 4412,
-  },
-  {
-    rank: 5,
-    name: "Hex Venom",
-    avatar: "",
-    codeforcesUsername: "HEX_VENOM",
-    streak: 6,
-    todaySolved: 4,
-    totalSolved: 645,
-    cfRating: 1700,
-    tier: "TIER_B",
-    id: 3301,
-  },
-];
 
-const MOCK_STATS: StatsOverview = {
-  studentsOnline: 128,
-  solvedToday: 1042,
-  activeStreaks: 76,
-  totalRegistered: 2450,
-};
-
-const MOCK_WEEKLY_STATS: WeeklyStats = {
-  totalCfSolved: 4218,
-  totalLcSolved: 3764,
-  onlineUsers: 342,
-  daysArchived: 7,
-};
 
 const DISCORD_LINK = "https://discord.gg/jTTckmfwfR";
 
@@ -162,92 +85,103 @@ const WEEKLY_CARD_CONFIG = [
 export default function ArchivePage() {
   const days = useMemo(() => getPast7Days(), []);
   const [selectedDate, setSelectedDate] = useState(days[0].key);
+  
+  const [archivesData, setArchivesData] = useState<any[]>([]);
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
-  const [stats, setStats] = useState<StatsOverview>(MOCK_STATS);
-  const [weeklyStats, setWeeklyStats] =
-    useState<WeeklyStats>(MOCK_WEEKLY_STATS);
+  const [stats, setStats] = useState<StatsOverview>({ activeToday: 0, solvedToday: 0, cfSolvedToday: 0, lcSolvedToday: 0 });
+  const [weeklyStats, setWeeklyStats] = useState<WeeklyStats>({ totalCfSolved: 0, totalLcSolved: 0, onlineUsers: 0, daysArchived: 0 });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
-  const [isMock, setIsMock] = useState(false);
 
-  /* ── Fetch archive data for a specific date ── */
-  const fetchArchive = useCallback(
-    async (date: string, pageNum: number) => {
-      setLoading(true);
-      try {
-        const res = await api(
-          `/api/archive?date=${date}&page=${pageNum}`
-        );
-
-        if (!res.ok) throw new Error("Failed to fetch archive");
-
-        const json: ArchiveApiResponse = await res.json();
-
-        const mapped: LeaderboardUser[] = (json.leaderboard || []).map(
-          (u) => ({
-            rank: u.rank,
-            name: u.name,
-            avatar: u.avatar || "",
-            codeforcesUsername: u.codeforcesUsername || u.name,
-            leetcodeUsername: u.leetcodeUsername,
-            streak: u.streak ?? 0,
-            todaySolved: u.todaySolved ?? 0,
-            totalSolved: u.totalSolved ?? 0,
-            cfRating: u.cfRating,
-            cfMaxRating: u.cfMaxRating,
-            cfRank: u.cfRank,
-          })
-        );
-
-        setUsers(mapped);
-        setPage(json.page);
-        setTotalPages(json.totalPages);
-        setTotalUsers(json.totalUsers);
-        setIsMock(false);
-
-        if (json.stats) {
-          setStats(json.stats);
-        }
-      } catch {
-        console.warn("Archive API unavailable — using mock data");
-        setUsers(MOCK_ARCHIVE_USERS);
-        setStats(MOCK_STATS);
-        setTotalPages(1);
-        setTotalUsers(MOCK_ARCHIVE_USERS.length);
-        setIsMock(true);
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
-
-  /* ── Fetch weekly aggregate stats ── */
-  const fetchWeeklyStats = useCallback(async () => {
+  /* ── Fetch all archives (last 7 days) ── */
+  const fetchAllArchives = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const res = await api("/api/archive/weekly-stats");
-      if (!res.ok) throw new Error("Failed to fetch weekly stats");
+      const res = await api("/api/v1/archive");
+      if (!res.ok) throw new Error("Failed to fetch archive");
       const json = await res.json();
-      setWeeklyStats(json);
-    } catch {
-      console.warn("Weekly stats API unavailable — using mock data");
-      setWeeklyStats(MOCK_WEEKLY_STATS);
+      
+      if (json.success && json.data) {
+        setArchivesData(json.data);
+        
+        let totalCf = 0;
+        let totalLc = 0;
+        let online = 0;
+        json.data.forEach((day: any) => {
+          totalCf += day.total_CFsolved || 0;
+          totalLc += day.total_LCsolved || 0;
+          online += day.total_online || 0;
+        });
+        setWeeklyStats({
+          totalCfSolved: totalCf,
+          totalLcSolved: totalLc,
+          onlineUsers: online,
+          daysArchived: json.data.length,
+        });
+      } else {
+        throw new Error(json.message || "Failed to fetch archive data");
+      }
+    } catch (err: any) {
+      console.error("Error fetching archive:", err);
+      setError(err.message || "Archive API offline");
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchArchive(selectedDate, page);
-  }, [selectedDate, page, fetchArchive]);
+    fetchAllArchives();
+  }, [fetchAllArchives]);
 
   useEffect(() => {
-    fetchWeeklyStats();
-  }, [fetchWeeklyStats]);
+    const dayArchive = archivesData.find((d: any) => {
+      const dateObj = new Date(d.date);
+      return dateObj.toISOString().split("T")[0] === selectedDate;
+    });
+
+    if (dayArchive) {
+      const mapped: LeaderboardUser[] = (dayArchive.top_users || []).map(
+        (u: any, idx: number) => ({
+          rank: idx + 1,
+          name: u.name,
+          avatar: "",
+          codeforcesUsername: u.name,
+          streak: 0,
+          todaySolved: u.totalSolvedToday || (u.cfSolved + u.lcSolved),
+          totalSolved: 0,
+          cfSolvedToday: u.cfSolved,
+          lcSolvedToday: u.lcSolved,
+          cfSolved: 0,
+          lcSolved: 0,
+          cfStreak: 0,
+          lcStreak: 0,
+          cfRating: 0,
+        })
+      );
+      setUsers(mapped);
+      setTotalUsers(dayArchive.total_online || 0);
+      setStats({
+        activeToday: dayArchive.total_online || 0,
+        solvedToday: dayArchive.total_solved || 0,
+        cfSolvedToday: dayArchive.total_CFsolved || 0,
+        lcSolvedToday: dayArchive.total_LCsolved || 0,
+      });
+    } else {
+      setUsers([]);
+      setTotalUsers(0);
+      setStats({ activeToday: 0, solvedToday: 0, cfSolvedToday: 0, lcSolvedToday: 0 });
+    }
+    setPage(1);
+    setTotalPages(1);
+  }, [selectedDate, archivesData]);
 
   const handleDateSelect = (dateKey: string) => {
     setSelectedDate(dateKey);
-    setPage(1);
   };
 
   const handlePrevPage = () => {
@@ -262,7 +196,7 @@ export default function ArchivePage() {
   if (loading) {
     return (
       <div
-        className="min-h-screen px-6 md:px-10 py-8 md:py-12"
+        className="min-h-screen px-3 sm:px-6 md:px-10 py-6 sm:py-8 md:py-12 w-full overflow-hidden"
         style={{ background: "var(--lb-bg)" }}
       >
         {/* Header skeleton */}
@@ -330,13 +264,13 @@ export default function ArchivePage() {
                   borderColor: "var(--lb-border)",
                 }}
               >
-                <div className="flex w-[100px] flex-shrink-0 items-center justify-center">
+                <div className="flex w-12 sm:w-[100px] flex-shrink-0 items-center justify-center">
                   <div
-                    className="h-12 w-12 rounded-sm animate-pulse"
+                    className="h-8 w-8 sm:h-12 sm:w-12 rounded-sm animate-pulse"
                     style={{ background: "var(--lb-border)" }}
                   />
                 </div>
-                <div className="flex-1 py-5 px-6">
+                <div className="flex-1 py-3 px-2 sm:py-5 sm:px-6 overflow-hidden">
                   <div
                     className="h-7 w-48 rounded-sm animate-pulse mb-3"
                     style={{ background: "var(--lb-border)" }}
@@ -366,9 +300,9 @@ export default function ArchivePage() {
                     ))}
                   </div>
                 </div>
-                <div className="flex w-[120px] flex-shrink-0 flex-col items-center justify-center">
+                <div className="flex w-12 sm:w-[120px] flex-shrink-0 flex-col items-center justify-center border-l sm:border-l-0" style={{ borderColor: "var(--lb-border)" }}>
                   <div
-                    className="h-10 w-10 rounded-full animate-pulse"
+                    className="h-8 w-8 sm:h-10 sm:w-10 rounded-full animate-pulse"
                     style={{ background: "var(--lb-border)" }}
                   />
                   <div
@@ -385,7 +319,7 @@ export default function ArchivePage() {
   }
 
   return (
-    <div className="min-h-screen px-6 md:px-10 py-8 md:py-12">
+    <div className="min-h-screen px-3 sm:px-6 md:px-10 py-6 sm:py-8 md:py-12 w-full overflow-hidden">
       {/* Header */}
       <ArchiveHeader />
 
@@ -402,23 +336,23 @@ export default function ArchivePage() {
       </div>
 
       {/* Data source indicator */}
-      {isMock && (
+      {error && (
         <div
-          className="mt-4 flex items-center gap-2 border px-4 py-2"
+          className="mt-4 flex flex-wrap items-center gap-2 border px-4 py-2 w-full"
           style={{
-            borderColor: "rgba(255, 180, 0, 0.3)",
-            background: "rgba(255, 180, 0, 0.05)",
+            borderColor: "rgba(255, 0, 0, 0.3)",
+            background: "rgba(255, 0, 0, 0.05)",
           }}
         >
           <span
             className="inline-block h-2 w-2 rounded-full animate-pulse"
-            style={{ background: "#ffb400" }}
+            style={{ background: "#ff0000" }}
           />
           <span
             className="font-mono text-[11px] tracking-wider"
-            style={{ color: "#ffb400" }}
+            style={{ color: "#ff0000" }}
           >
-            [WARN] ARCHIVE_API_OFFLINE — DISPLAYING CACHED MOCK DATA
+            [ERROR] {error.toUpperCase()} — NO DATA AVAILABLE
           </span>
         </div>
       )}
@@ -448,7 +382,7 @@ export default function ArchivePage() {
 
         {/* Entries */}
         <div
-          className="border overflow-hidden"
+          className="border overflow-hidden w-full"
           style={{ borderColor: "var(--lb-border)" }}
         >
           {users.length === 0 ? (
@@ -562,9 +496,9 @@ export default function ArchivePage() {
 /* ── Archive Header ── */
 function ArchiveHeader() {
   return (
-    <header className="mb-8">
+    <header className="mb-6 sm:mb-8">
       <h1
-        className="font-display text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-none"
+        className="font-display text-4xl sm:text-6xl md:text-7xl font-black tracking-tight leading-none"
         style={{ color: "var(--lb-text)" }}
       >
         COMP_LEAGUE
@@ -572,11 +506,11 @@ function ArchiveHeader() {
 
       <div className="mt-2 inline-block">
         <div
-          className="px-4 py-2 -skew-x-3"
+          className="px-3 sm:px-4 py-1.5 sm:py-2 -skew-x-3"
           style={{ background: "var(--lb-accent)" }}
         >
           <span
-            className="block skew-x-3 font-display text-3xl sm:text-4xl md:text-5xl font-black tracking-tight"
+            className="block skew-x-3 font-display text-2xl sm:text-4xl md:text-5xl font-black tracking-tight"
             style={{ color: "var(--lb-accent-text)" }}
           >
             // ARCHIVE
@@ -607,7 +541,7 @@ function DateFilter({
 }) {
   return (
     <div
-      className="border overflow-hidden"
+      className="border overflow-hidden w-full"
       style={{ borderColor: "var(--lb-border)" }}
     >
       {/* Filter header */}
@@ -719,14 +653,14 @@ function DateFilter({
 function WeeklyStatsGrid({ stats }: { stats: WeeklyStats }) {
   return (
     <div
-      className="grid grid-cols-2 lg:grid-cols-4 gap-px"
+      className="grid grid-cols-2 lg:grid-cols-4 gap-px w-full"
       style={{ background: "var(--lb-border)" }}
     >
       {WEEKLY_CARD_CONFIG.map(
         ({ sysCode, label, key, icon: Icon, highlight }) => (
           <div
             key={sysCode}
-            className="relative overflow-hidden p-5"
+            className="relative overflow-hidden p-3 sm:p-5"
             style={{
               background: highlight
                 ? "var(--lb-card-highlight-bg)"
@@ -737,15 +671,16 @@ function WeeklyStatsGrid({ stats }: { stats: WeeklyStats }) {
             }}
           >
             {/* System Code + Icon */}
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
               <span
-                className="font-mono text-[10px] tracking-wider"
+                className="font-mono text-[9px] sm:text-[10px] tracking-wider truncate"
                 style={{ color: "var(--lb-text-muted)" }}
               >
                 [{sysCode}]
               </span>
               <Icon
-                size={16}
+                size={14}
+                className="sm:w-4 sm:h-4 shrink-0"
                 style={{
                   color: highlight
                     ? "var(--lb-accent)"
@@ -756,7 +691,7 @@ function WeeklyStatsGrid({ stats }: { stats: WeeklyStats }) {
 
             {/* Value */}
             <p
-              className="font-display text-3xl lg:text-4xl font-bold tracking-tight"
+              className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight truncate"
               style={{
                 color: highlight ? "var(--lb-accent)" : "var(--lb-text)",
               }}
@@ -766,7 +701,7 @@ function WeeklyStatsGrid({ stats }: { stats: WeeklyStats }) {
 
             {/* Label */}
             <p
-              className="font-mono text-[10px] tracking-widest mt-2 uppercase"
+              className="font-mono text-[8px] sm:text-[10px] tracking-widest mt-1 sm:mt-2 uppercase truncate"
               style={{ color: "var(--lb-text-muted)" }}
             >
               {label}
@@ -782,7 +717,7 @@ function WeeklyStatsGrid({ stats }: { stats: WeeklyStats }) {
 function DiscordCTA() {
   return (
     <div
-      className="mt-10 border overflow-hidden"
+      className="mt-10 border overflow-hidden w-full"
       style={{ borderColor: "var(--lb-border)" }}
     >
       {/* Section label */}
@@ -850,7 +785,7 @@ function DiscordCTA() {
 
       {/* Footer detail */}
       <div
-        className="flex items-center gap-4 px-4 py-2 border-t"
+        className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 px-4 py-3 sm:py-2 border-t w-full"
         style={{
           background: "var(--lb-surface)",
           borderColor: "var(--lb-border)",

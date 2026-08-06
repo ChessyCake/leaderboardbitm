@@ -9,6 +9,8 @@ import authRoutes from "../routes/auth.routes"
 import onboardingRoutes from "../routes/onboarding.routes"
 import leaderboardRoutes from "../routes/leaderboard.route";
 import statsRoutes from "../routes/stats.route";
+import archiveRoutes from "../routes/archive.route";
+
 
 const app = express();
 
@@ -27,5 +29,6 @@ app.use("/auth", authRoutes)
 app.use("/api/v1/onboarding", onboardingRoutes)
 app.use("/api/v1/leaderboard", leaderboardRoutes);
 app.use("/api/v1/stats", statsRoutes);
+app.use("/api/v1/archive", archiveRoutes);
 
 export default app;

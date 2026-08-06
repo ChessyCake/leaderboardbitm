@@ -100,7 +100,7 @@ export default function LeaderboardPage() {
   if (loading) {
     return (
       <div
-        className="min-h-screen px-6 md:px-10 py-8 md:py-12"
+        className="min-h-screen px-3 sm:px-6 md:px-10 py-6 sm:py-8 md:py-12 w-full overflow-hidden"
         style={{ background: "var(--lb-bg)" }}
       >
         <LeaderboardHeader />
@@ -158,14 +158,14 @@ export default function LeaderboardPage() {
                 }}
               >
                 {/* Rank skeleton */}
-                <div className="flex w-[100px] flex-shrink-0 items-center justify-center">
+                <div className="flex w-12 sm:w-[100px] flex-shrink-0 items-center justify-center">
                   <div
-                    className="h-12 w-12 rounded-sm animate-pulse"
+                    className="h-8 w-8 sm:h-12 sm:w-12 rounded-sm animate-pulse"
                     style={{ background: "var(--lb-border)" }}
                   />
                 </div>
                 {/* Content skeleton */}
-                <div className="flex-1 py-5 px-6">
+                <div className="flex-1 py-3 px-2 sm:py-5 sm:px-6 overflow-hidden">
                   <div
                     className="h-7 w-48 rounded-sm animate-pulse mb-3"
                     style={{ background: "var(--lb-border)" }}
@@ -196,9 +196,9 @@ export default function LeaderboardPage() {
                   </div>
                 </div>
                 {/* Streak skeleton */}
-                <div className="flex w-[120px] flex-shrink-0 flex-col items-center justify-center">
+                <div className="flex w-12 sm:w-[120px] flex-shrink-0 flex-col items-center justify-center border-l sm:border-l-0" style={{ borderColor: "var(--lb-border)" }}>
                   <div
-                    className="h-10 w-10 rounded-full animate-pulse"
+                    className="h-8 w-8 sm:h-10 sm:w-10 rounded-full animate-pulse"
                     style={{ background: "var(--lb-border)" }}
                   />
                   <div
@@ -218,11 +218,11 @@ export default function LeaderboardPage() {
   if (error) {
     return (
       <div
-        className="min-h-screen px-6 md:px-10 py-8 md:py-12 flex flex-col justify-center items-center"
+        className="min-h-screen px-3 sm:px-6 md:px-10 py-6 sm:py-8 md:py-12 flex flex-col justify-center items-center w-full"
         style={{ background: "var(--lb-bg)" }}
       >
         <div
-          className="border-2 p-8 max-w-md w-full text-center relative overflow-hidden"
+          className="border-2 p-5 md:p-8 max-w-md w-full mx-4 text-center relative overflow-hidden"
           style={{
             borderColor: "rgba(239, 68, 68, 0.4)",
             background: "rgba(239, 68, 68, 0.05)",
@@ -279,7 +279,7 @@ export default function LeaderboardPage() {
   }
 
   return (
-    <div className="min-h-screen px-6 md:px-10 py-8 md:py-12">
+    <div className="min-h-screen px-3 sm:px-6 md:px-10 py-6 sm:py-8 md:py-12 w-full overflow-hidden">
       {/* Header */}
       <LeaderboardHeader />
 
@@ -314,7 +314,7 @@ export default function LeaderboardPage() {
 
         {/* Entries */}
         <div
-          className="border overflow-hidden"
+          className="border overflow-hidden w-full"
           style={{ borderColor: "var(--lb-border)" }}
         >
           {users.length === 0 ? (

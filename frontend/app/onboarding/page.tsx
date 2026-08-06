@@ -37,7 +37,7 @@ export default function Onboarding() {
         throw new Error(data.message);
       }
 
-      router.replace("/dashboard");
+      router.replace("/leaderboard");
     } catch (err) {
       console.error(err);
       alert("Something went wrong.");

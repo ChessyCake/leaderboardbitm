@@ -31,7 +31,7 @@ function LoginSuccessContent() {
         const user = await res.json();
 
         if (user.onboarded) {
-          router.replace("/dashboard");
+          router.replace("/leaderboard");
         } else {
           router.replace("/onboarding");
         }
