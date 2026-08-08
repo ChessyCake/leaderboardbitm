@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Shield,
   MessageCircleQuestion,
+  Users,
 } from "lucide-react";
 
 import { FaDiscord, FaWhatsapp } from "react-icons/fa";
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
   { label: "RANKINGS", icon: Trophy, href: "/leaderboard" },
   { label: "ARCHIVE", icon: Archive, href: "/archive" },
   { label: "FAQ", icon: MessageCircleQuestion, href: "/faq" },
+  { label: "CREDITS", icon: Users, href: "/credits" },
 ];
 
 export default function Sidebar() {

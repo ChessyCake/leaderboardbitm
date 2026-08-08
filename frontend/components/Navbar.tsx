@@ -66,6 +66,12 @@ export default function Navbar() {
         {/* Right */}
         <div className="flex items-center gap-5">
           <Link
+            href="/credits"
+            className="text-sm font-medium text-on-surface-variant transition hover:text-primary mr-2"
+          >
+            Credits
+          </Link>
+          <Link
             href="/faq"
             className="text-sm font-medium text-on-surface-variant transition hover:text-primary mr-2"
           >
