@@ -21,6 +21,7 @@ import {
   Database,
   ExternalLink,
   ChevronRight,
+  Trophy,
 } from "lucide-react";
 
 /* ── Helpers ── */
@@ -50,34 +51,34 @@ function getPast7Days(): { key: string; label: string; date: Date }[] {
 
 const DISCORD_LINK = "https://discord.gg/jTTckmfwfR";
 
-/* ── Weekly Stats Card Config ── */
-const WEEKLY_CARD_CONFIG = [
+/* ── Day Stats Card Config ── */
+const DAY_CARD_CONFIG = [
   {
-    sysCode: "ARC.01",
-    label: "CF SOLVED (WEEK)",
-    key: "totalCfSolved" as const,
+    sysCode: "ARC.D1",
+    label: "CF SOLVED (DAY)",
+    key: "cfSolvedToday" as const,
     icon: Code2,
     highlight: true,
   },
   {
-    sysCode: "ARC.02",
-    label: "LC SOLVED (WEEK)",
-    key: "totalLcSolved" as const,
+    sysCode: "ARC.D2",
+    label: "LC SOLVED (DAY)",
+    key: "lcSolvedToday" as const,
     icon: Braces,
     highlight: false,
   },
   {
-    sysCode: "ARC.03",
-    label: "ONLINE USERS (WEEK)",
-    key: "onlineUsers" as const,
+    sysCode: "ARC.D3",
+    label: "ACTIVE USERS (DAY)",
+    key: "activeToday" as const,
     icon: Users,
     highlight: false,
   },
   {
-    sysCode: "ARC.04",
-    label: "DAYS ARCHIVED",
-    key: "daysArchived" as const,
-    icon: Database,
+    sysCode: "ARC.D4",
+    label: "TOTAL SOLVED (DAY)",
+    key: "solvedToday" as const,
+    icon: Trophy,
     highlight: false,
   },
 ];
@@ -139,9 +140,17 @@ export default function ArchivePage() {
   }, [fetchAllArchives]);
 
   useEffect(() => {
+    // The archive date field may be a timestamp (ms) or ISO string — handle both
     const dayArchive = archivesData.find((d: any) => {
-      const dateObj = new Date(d.date);
-      return dateObj.toISOString().split("T")[0] === selectedDate;
+      const raw = d.date;
+      let dateStr: string;
+      if (typeof raw === "number") {
+        // It's a UTC midnight timestamp — convert to local date string
+        dateStr = new Date(raw).toLocaleDateString("en-CA"); // YYYY-MM-DD in local time
+      } else {
+        dateStr = new Date(raw).toLocaleDateString("en-CA");
+      }
+      return dateStr === selectedDate;
     });
 
     if (dayArchive) {
@@ -150,7 +159,6 @@ export default function ArchivePage() {
           rank: idx + 1,
           name: u.name,
           avatar: "",
-          codeforcesUsername: u.name,
           streak: 0,
           todaySolved: u.totalSolvedToday || (u.cfSolved + u.lcSolved),
           totalSolved: 0,
@@ -196,7 +204,7 @@ export default function ArchivePage() {
   if (loading) {
     return (
       <div
-        className="min-h-screen px-3 sm:px-6 md:px-10 py-6 sm:py-8 md:py-12 w-full overflow-hidden"
+        className="min-h-screen px-3 sm:px-6 md:px-10 pt-16 pb-6 sm:py-8 md:py-12 w-full overflow-hidden"
         style={{ background: "var(--lb-bg)" }}
       >
         {/* Header skeleton */}
@@ -319,7 +327,7 @@ export default function ArchivePage() {
   }
 
   return (
-    <div className="min-h-screen px-3 sm:px-6 md:px-10 py-6 sm:py-8 md:py-12 w-full overflow-hidden">
+    <div className="min-h-screen px-3 sm:px-6 md:px-10 pt-16 pb-6 sm:py-8 md:py-12 w-full overflow-hidden">
       {/* Header */}
       <ArchiveHeader />
 
@@ -330,9 +338,28 @@ export default function ArchivePage() {
         onSelect={handleDateSelect}
       />
 
-      {/* Weekly Stats Grid */}
+      {/* Per-day Stats Grid — updates on date selection */}
       <div className="mt-8">
-        <WeeklyStatsGrid stats={weeklyStats} />
+        <DayStatsGrid stats={stats} selectedDate={selectedDate} />
+      </div>
+
+      {/* Weekly summary strip */}
+      <div
+        className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-1 px-4 py-2 border"
+        style={{ borderColor: "var(--lb-border)", background: "var(--lb-surface)" }}
+      >
+        <span className="font-mono text-[9px] tracking-widest uppercase" style={{ color: "var(--lb-text-dim)" }}>
+          7-DAY TOTALS:
+        </span>
+        <span className="font-mono text-[10px] tracking-wider" style={{ color: "var(--lb-text-muted)" }}>
+          CF <span style={{ color: "var(--lb-accent)" }}>{weeklyStats.totalCfSolved}</span>
+        </span>
+        <span className="font-mono text-[10px] tracking-wider" style={{ color: "var(--lb-text-muted)" }}>
+          LC <span style={{ color: "var(--lb-text)" }}>{weeklyStats.totalLcSolved}</span>
+        </span>
+        <span className="font-mono text-[10px] tracking-wider" style={{ color: "var(--lb-text-muted)" }}>
+          DAYS <span style={{ color: "var(--lb-text)" }}>{weeklyStats.daysArchived}</span>
+        </span>
       </div>
 
       {/* Data source indicator */}
@@ -649,14 +676,14 @@ function DateFilter({
   );
 }
 
-/* ── Weekly Stats Grid ── */
-function WeeklyStatsGrid({ stats }: { stats: WeeklyStats }) {
+/* ── Day Stats Grid ── */
+function DayStatsGrid({ stats, selectedDate }: { stats: StatsOverview; selectedDate: string }) {
   return (
     <div
       className="grid grid-cols-2 lg:grid-cols-4 gap-px w-full"
       style={{ background: "var(--lb-border)" }}
     >
-      {WEEKLY_CARD_CONFIG.map(
+      {DAY_CARD_CONFIG.map(
         ({ sysCode, label, key, icon: Icon, highlight }) => (
           <div
             key={sysCode}

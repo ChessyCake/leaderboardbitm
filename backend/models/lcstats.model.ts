@@ -34,6 +34,11 @@ const leetcodeSchema = new mongoose.Schema(
       default: null,
     },
 
+    lastSolvedDay: {
+      type: Number,
+      default: null,
+    },
+
     lastSyncedAt: {
       type: Date,
       default: null,

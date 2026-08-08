@@ -10,7 +10,7 @@ export default function LeaderboardLayout({
       <Sidebar />
 
       {/* Main content — offset by sidebar width */}
-      <main className="flex-1 pl-16 md:pl-[220px] w-full min-h-screen transition-all duration-300 min-w-0 overflow-x-hidden">
+      <main className="flex-1 pl-0 md:pl-[220px] w-full min-h-screen transition-all duration-300 min-w-0 overflow-x-hidden">
         {children}
       </main>
     </div>

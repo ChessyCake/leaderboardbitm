@@ -13,6 +13,7 @@ import StatsGrid from "@/components/leaderboard/StatsGrid";
 import ManifestEntry from "@/components/leaderboard/ManifestEntry";
 import LeaderboardFooter from "@/components/leaderboard/LeaderboardFooter";
 import { useRouter } from "next/navigation";
+import { Trophy } from "lucide-react";
 
 
 
@@ -75,7 +76,7 @@ export default function LeaderboardPage() {
           rank: u.rank,
           name: u.name,
           avatar: u.avatar || "",
-          codeforcesUsername: u.codeforcesUsername || u.name,
+          codeforcesUsername: u.codeforcesUsername,
           leetcodeUsername: u.leetcodeUsername,
           streak: u.streak ?? 0,
           todaySolved: u.todaySolved ?? 0,
@@ -125,7 +126,7 @@ export default function LeaderboardPage() {
   if (loading) {
     return (
       <div
-        className="min-h-screen px-3 sm:px-6 md:px-10 py-6 sm:py-8 md:py-12 w-full overflow-hidden"
+        className="min-h-screen px-3 sm:px-6 md:px-10 pt-16 pb-6 sm:py-8 md:py-12 w-full overflow-hidden"
         style={{ background: "var(--lb-bg)" }}
       >
         <LeaderboardHeader />
@@ -243,7 +244,7 @@ export default function LeaderboardPage() {
   if (error) {
     return (
       <div
-        className="min-h-screen px-3 sm:px-6 md:px-10 py-6 sm:py-8 md:py-12 flex flex-col justify-center items-center w-full"
+        className="min-h-screen px-3 sm:px-6 md:px-10 pt-16 pb-6 sm:py-8 md:py-12 flex flex-col justify-center items-center w-full"
         style={{ background: "var(--lb-bg)" }}
       >
         <div
@@ -304,7 +305,7 @@ export default function LeaderboardPage() {
   }
 
   return (
-    <div className="min-h-screen px-3 sm:px-6 md:px-10 py-6 sm:py-8 md:py-12 w-full overflow-hidden">
+    <div className="min-h-screen px-3 sm:px-6 md:px-10 pt-16 pb-6 sm:py-8 md:py-12 w-full overflow-hidden">
       {/* Header */}
       <LeaderboardHeader />
 
@@ -344,20 +345,32 @@ export default function LeaderboardPage() {
         >
           {users.length === 0 ? (
             <div
-              className="py-16 text-center"
+              className="flex flex-col items-center justify-center py-24 text-center"
               style={{ background: "var(--lb-card-bg)" }}
             >
+              <div
+                className="mb-6 flex h-16 w-16 items-center justify-center rounded-sm border"
+                style={{
+                  borderColor: "var(--lb-border-accent)",
+                  background: "var(--lb-surface)",
+                  color: "var(--lb-accent)",
+                }}
+              >
+                <Trophy size={28} />
+              </div>
+
+              <h2
+                className="font-display text-xl sm:text-2xl font-bold tracking-tight mb-2 uppercase"
+                style={{ color: "var(--lb-text)" }}
+              >
+                No users have solved yet today
+              </h2>
+
               <p
-                className="font-mono text-sm tracking-wider"
+                className="font-mono text-[11px] tracking-wider uppercase max-w-sm"
                 style={{ color: "var(--lb-text-muted)" }}
               >
-                [NO_DATA_FOUND]
-              </p>
-              <p
-                className="font-mono text-[10px] tracking-wider mt-2"
-                style={{ color: "var(--lb-text-dim)" }}
-              >
-                Manifest is empty. Register to appear on the leaderboard.
+                Be the first one to solve a problem and claim the top spot
               </p>
             </div>
           ) : (

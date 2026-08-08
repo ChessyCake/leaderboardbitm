@@ -10,7 +10,6 @@ export const getOverallStats = async (req: Request, res: Response) => {
                 $group: {
                     _id: null,
                     solvedToday: { $sum: "$todaySolved" },
-                    totalSolved: { $sum: "$totalSolved" },
                     activeStreaks: {
                         $sum: { $cond: [{ $gt: ["$streak", 0] }, 1, 0] },
                     },
@@ -23,7 +22,6 @@ export const getOverallStats = async (req: Request, res: Response) => {
                 $group: {
                     _id: null,
                     solvedToday: { $sum: "$todaySolved" },
-                    totalSolved: { $sum: "$totalSolved" },
                     activeStreaks: {
                         $sum: { $cond: [{ $gt: ["$streak", 0] }, 1, 0] },
                     },
@@ -53,7 +51,6 @@ export const getOverallStats = async (req: Request, res: Response) => {
                 activeToday: activeUsersSet.size,
                 totalCFSolvedToday: cfStats?.solvedToday || 0,
                 totalLCSolvedToday: lcStats?.solvedToday || 0,
-                totalSolvedByAll: (cfStats?.totalSolved || 0) + (lcStats?.totalSolved || 0),
                 totalActiveStreaks: (cfStats?.activeStreaks || 0) + (lcStats?.activeStreaks || 0),
             }
         });

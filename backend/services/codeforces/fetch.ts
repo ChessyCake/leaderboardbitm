@@ -5,12 +5,18 @@ interface UserInfo {
     lastSolvedID: number | null;
 }
 
+/**
+ * Fetches submissions from Codeforces API.
+ * Always fetches the last 200 submissions so we can accurately recount todaySolved.
+ * Stops before lastSolvedID to avoid reprocessing old submissions for totalSolved counting.
+ */
 export const getSub = async ({
     username,
     lastSolvedID,
 }: UserInfo): Promise<Submission[]> => {
 
-    const limit = lastSolvedID ? 100 : 5000;
+    // Always fetch at least 200 to cover today's submissions even if cursor is up to date
+    const limit = 200;
 
     try {
         const response = await fetch(
@@ -26,11 +32,6 @@ export const getSub = async ({
         const submissions: Submission[] = [];
 
         for (const sub of data.result) {
-            // STOP fetching if we hit the submission we already recorded last time!
-            if (lastSolvedID && sub.id === lastSolvedID) {
-                break;
-            }
-
             submissions.push({
                 platform: "codeforces",
                 submissionID: sub.id,
