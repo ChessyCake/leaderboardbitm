@@ -17,7 +17,7 @@ const DEVELOPERS = [
   {
     sysCode: "DEV.02",
     name: "Prahlad Kumar",
-    role: "Backend",
+    role: "Backend Writer",
     description: "Building robust backend services, ensuring performance, and managing system integrations.",
     github: "#",
     linkedin: "#",
