@@ -1,6 +1,6 @@
 import { Router } from "express"
 import passport from "passport"
-import { getMe, getOnboardingStatus, googleCallback } from "../controller/auth.controller";
+import {  getMe, getOnboardingStatus, getQuestion, getusersubmissions, googleCallback } from "../controller/auth.controller";
 import { authMiddleware } from "../middlewares/auth.middlewares";
 
 
@@ -45,5 +45,15 @@ router.get(
   authMiddleware,
   getOnboardingStatus
 );
+
+router.post("/getQuestion",
+    authMiddleware,
+    getQuestion
+)
+
+router.post("/user_verification",
+    authMiddleware,
+    getusersubmissions
+)
 
 export default router
