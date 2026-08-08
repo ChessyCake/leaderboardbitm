@@ -8,6 +8,7 @@ import {
   Archive,
   ChevronRight,
   Shield,
+  MessageCircleQuestion,
 } from "lucide-react";
 
 import { FaDiscord, FaWhatsapp } from "react-icons/fa";
@@ -16,6 +17,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 const NAV_ITEMS = [
   { label: "RANKINGS", icon: Trophy, href: "/leaderboard" },
   { label: "ARCHIVE", icon: Archive, href: "/archive" },
+  { label: "FAQ", icon: MessageCircleQuestion, href: "/faq" },
 ];
 
 export default function Sidebar() {
