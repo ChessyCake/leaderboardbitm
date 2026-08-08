@@ -78,9 +78,13 @@ export default function Sidebar() {
           : p
       );
       setEditing(false);
-    } catch (e: any) {
-      setSaveError(e.message || "Error saving");
-    } finally {
+    }  catch (e: unknown) {
+  if (e instanceof Error) {
+    setSaveError(e.message);
+  } else {
+    setSaveError("Error saving");
+  }
+} finally {
       setSaving(false);
     }
   };
