@@ -1,15 +1,9 @@
-import { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder } from "discord.js";
+import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
 import { api } from "../services/api";
-import path from "path";
-import { fileURLToPath } from "url";
+import { EMOJI } from "../config/emojis";
 
-// ── Resolve asset path ──
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const BANNER_PATH = path.join(__dirname, "..", "assets", "stats_banner.png");
-
-// ── Theme ──
-const NEON_CYAN = 0x00f0ff;
+const THEME_RED = 0xff0000;
+const GLITCH_GIF = "https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif";
 
 export const data = new SlashCommandBuilder()
   .setName("leaderboard")
@@ -28,67 +22,41 @@ export const execute = async (interaction: any) => {
     const topUsers = resData.leaderboard.slice(0, 10);
     const stats = resData.stats;
 
-    // ── Attach banner image ──
-    const bannerAttachment = new AttachmentBuilder(BANNER_PATH, {
-      name: "leaderboard_banner.png",
-    });
 
-    // ── Build leaderboard entries ──
-    let entries = "";
+    let description = `**${EMOJI.bullet} GLOBAL LEADERBOARD**\n> Live standings requested by ${interaction.user.username}.\n\n`;
 
     if (topUsers.length === 0) {
-      entries = "> *No operators have solved today yet. Be the first!*\n";
+      description += `**${EMOJI.sparkle} STANDINGS**\n> No operators have solved today yet.\n\n`;
     } else {
+      description += `**${EMOJI.crown} TOP OPERATORS**\n`;
       topUsers.forEach((u: any, i: number) => {
-        const medal =
-          i === 0 ? "👑" : i === 1 ? "🥈" : i === 2 ? "🥉" : `\`${String(i + 1).padStart(2, "0")}\``;
-        const cfTag = u.cfSolvedToday > 0 ? `🟠 CF:\`${u.cfSolvedToday}\`` : "";
-        const lcTag = u.lcSolvedToday > 0 ? `🟡 LC:\`${u.lcSolvedToday}\`` : "";
-        const platforms = [cfTag, lcTag].filter(Boolean).join("  ") || "─";
-        const streakDisplay = u.streak > 0 ? `  🔥 \`${u.streak}\`` : "";
-        const solvedBar = "▰".repeat(Math.min(u.todaySolved || 1, 8)) + "▱".repeat(Math.max(8 - (u.todaySolved || 1), 0));
-
-        if (i < 3) {
-          entries += `> ${medal}  **${u.name}**\n`;
-          entries += `> \`${solvedBar}\` **${u.todaySolved}** solved ─ ${platforms}${streakDisplay}\n\n`;
-        } else {
-          entries += `> ${medal}  **${u.name}** ── **${u.todaySolved}** solved ─ ${platforms}${streakDisplay}\n`;
-        }
+        const medal = i === 0 ? EMOJI.crown : i === 1 ? EMOJI.silver : i === 2 ? EMOJI.bronze : `\`${String(i + 1).padStart(2, "0")}\``;
+        const cfTag = u.cfSolvedToday > 0 ? `${EMOJI.cf} CF: \`${u.cfSolvedToday}\`` : "";
+        const lcTag = u.lcSolvedToday > 0 ? `${EMOJI.lc} LC: \`${u.lcSolvedToday}\`` : "";
+        const platforms = [cfTag, lcTag].filter(Boolean).join(" | ") || "─";
+        const streakDisplay = u.streak > 0 ? ` | ${EMOJI.fire} \`${u.streak}\`` : "";
+        
+        description += `> ${medal} **${u.name}**: **${u.todaySolved}** Solved\n> └ ${platforms}${streakDisplay}\n`;
       });
+      description += `\n`;
     }
 
-    // ── Build full description ──
-    let desc = "";
-
-    desc += `### 🏆 ── TOP OPERATORS\n\n`;
-    desc += entries;
-    desc += `\n### 📊 ── TODAY'S STATS\n\n`;
-
-    desc += `> 👥 **Active Today** ──── **\`${stats.activeToday}\`**\n`;
-    desc += `> ⚡ **Total Solved** ──── **\`${stats.solvedToday}\`**\n`;
-    desc += `> 🟠 **CF Solved** ─────── **\`${stats.cfSolvedToday}\`**\n`;
-    desc += `> 🟡 **LC Solved** ─────── **\`${stats.lcSolvedToday}\`**\n\n`;
-
-    desc += `-# Requested by ${interaction.user.username} • Data from CF & LC APIs`;
+    description += `**${EMOJI.stats} TODAY'S STATS**\n`;
+    description += `> Active Operators: **${stats.activeToday}**\n`;
+    description += `> Total Solved: **${stats.solvedToday}**\n`;
+    description += `> ${EMOJI.cf} CF: **${stats.cfSolvedToday}** | ${EMOJI.lc} LC: **${stats.lcSolvedToday}**\n`;
 
     const embed = new EmbedBuilder()
-      .setColor(NEON_CYAN)
-      .setAuthor({
-        name: "COMP_LEAGUE ⚡ LEADERBOARD",
-        iconURL: "https://cdn.discordapp.com/emojis/1145727546653970432.gif",
-      })
-      .setTitle("⚡ ── LEADERBOARD ── ⚡")
-      .setDescription(desc)
-      .setImage("attachment://leaderboard_banner.png")
+      .setColor(THEME_RED)
+      .setDescription(description.trimEnd())
+      .setImage(GLITCH_GIF)
       .setFooter({
-        text: "COMP_LEAGUE • REALTIME LEADERBOARD • v2.1",
+        text: "COMP_LEAGUE • REALTIME LEADERBOARD",
         iconURL: "https://cdn.discordapp.com/emojis/1145727546653970432.gif",
-      })
-      .setTimestamp();
+      });
 
     await interaction.editReply({
       embeds: [embed],
-      files: [bannerAttachment],
     });
   } catch (error) {
     console.error(error);

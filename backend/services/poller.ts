@@ -26,10 +26,10 @@ const syncCodeforces = async (user: any) => {
         let cfDoc = await Codeforces.findOne({ user: user._id });
         if (!cfDoc) cfDoc = new Codeforces({ user: user._id });
 
-        // Always fetch last 200 submissions — enough to cover today's activity
+        
         const submissions = await getCFSub({
             username: user.codeforces_username,
-            lastSolvedID: null, // fetch unconditionally, we filter below
+            lastSolvedID: null, 
         });
 
         if (submissions.length === 0) {
@@ -45,11 +45,11 @@ const syncCodeforces = async (user: any) => {
 
         const lastKnownId = cfDoc.lastSubmissionId || 0;
 
-        // Process oldest-first
+        
         const chronologicalSubs = [...submissions].reverse();
 
         let maxSeenId = lastKnownId;
-        let todaySolvedCount = 0; // recount from scratch every sync
+        let todaySolvedCount = 0; 
 
         for (const sub of chronologicalSubs) {
             if (sub.verdict === "TESTING" || sub.verdict === "WAITING") continue;
@@ -60,12 +60,10 @@ const syncCodeforces = async (user: any) => {
                 const subDate = new Date(sub.timestamp * 1000);
                 const subDayStr = localDateStr(subDate);
 
-                // Count today's solves from the full window
+            
                 if (subDayStr === todayStr) {
                     todaySolvedCount += 1;
                 }
-
-                // Only update totalSolved / streak for genuinely new submissions
                 if (isNew) {
                     cfDoc.totalSolved += 1;
 
@@ -75,17 +73,19 @@ const syncCodeforces = async (user: any) => {
 
                     if (currentLastDay === 0) {
                         cfDoc.streak = 1;
-                    } else if (subDay === currentLastDay + ONE_DAY) {
-                        cfDoc.streak += 1;
-                    } else if (subDay > currentLastDay + ONE_DAY) {
-                        cfDoc.streak = 1;
+                    } else {
+                        const diffDays = Math.round((subDay - currentLastDay) / ONE_DAY);
+                        if (diffDays === 1) {
+                            cfDoc.streak += 1;
+                        } else if (diffDays > 1) {
+                            cfDoc.streak = 1;
+                        }
                     }
 
                     cfDoc.lastSolvedDay = subDay;
                 }
             }
 
-            // Advance cursor past every submission (OK or WA), but only new ones
             if (Number(sub.submissionID) > maxSeenId) {
                 maxSeenId = Number(sub.submissionID);
             }
@@ -94,9 +94,12 @@ const syncCodeforces = async (user: any) => {
         cfDoc.todaySolved = todaySolvedCount;
         cfDoc.lastSubmissionId = maxSeenId;
 
-        // Break streak if last solve was before yesterday
-        if ((cfDoc.lastSolvedDay || 0) > 0 && (cfDoc.lastSolvedDay || 0) < yesterdayTime) {
-            cfDoc.streak = 0;
+        const currentCFLastDay = cfDoc.lastSolvedDay || 0;
+        if (currentCFLastDay > 0) {
+            const diffDays = Math.round((todayTime - currentCFLastDay) / ONE_DAY);
+            if (diffDays > 1) {
+                cfDoc.streak = 0;
+            }
         }
 
         console.log(`[CF] ${user.codeforces_username} | todaySolved=${cfDoc.todaySolved} | streak=${cfDoc.streak}`);
@@ -126,7 +129,6 @@ const syncLeetCode = async (user: any) => {
         const todayTime = todayMidnight.getTime();
         const yesterdayTime = todayTime - ONE_DAY;
 
-        // Use lastSolvedDay (same field pattern as CF) for the reset check
         const lastSolvedDayStr = lcDoc.lastSolvedDay
             ? localDateStr(new Date(lcDoc.lastSolvedDay))
             : null;
@@ -149,31 +151,39 @@ const syncLeetCode = async (user: any) => {
                         lcDoc.todaySolved += 1;
                     }
 
-                    // Streak logic
+
                     subDate.setHours(0, 0, 0, 0);
                     const subDay = subDate.getTime();
                     const currentLastDay = (lcDoc as any).lastSolvedDay || 0;
 
                     if (currentLastDay === 0) {
                         lcDoc.streak = 1;
-                    } else if (subDay === currentLastDay + ONE_DAY) {
-                        lcDoc.streak += 1;
-                    } else if (subDay > currentLastDay + ONE_DAY) {
-                        lcDoc.streak = 1;
+                    } else {
+                        const diffDays = Math.round((subDay - currentLastDay) / ONE_DAY);
+                        if (diffDays === 1) {
+                            lcDoc.streak += 1;
+                        } else if (diffDays > 1) {
+                            lcDoc.streak = 1;
+                        }
                     }
 
                     (lcDoc as any).lastSolvedDay = subDay;
                 }
             }
 
-            lcDoc.lastSubmissionID = String(submissions[0].submissionID);
-            lcDoc.lastSubmissionTime = new Date(submissions[0].timestamp * 1000);
+            if (submissions[0]) {
+                lcDoc.lastSubmissionID = String(submissions[0].submissionID);
+                lcDoc.lastSubmissionTime = new Date(submissions[0].timestamp * 1000);
+            }
             console.log(`[LC] ${user.leetcode_username} | todaySolved=${lcDoc.todaySolved} | streak=${lcDoc.streak}`);
         }
 
         const lcLastSolvedDay = (lcDoc as any).lastSolvedDay || 0;
-        if (lcLastSolvedDay > 0 && lcLastSolvedDay < yesterdayTime) {
-            lcDoc.streak = 0;
+        if (lcLastSolvedDay > 0) {
+            const diffDays = Math.round((todayTime - lcLastSolvedDay) / ONE_DAY);
+            if (diffDays > 1) {
+                lcDoc.streak = 0;
+            }
         }
 
         lcDoc.lastSyncedAt = new Date();
@@ -215,6 +225,8 @@ export const startPoller = () => {
         cron.schedule("49 59 23 * * *", async () => {
                     console.log(`[${new Date().toISOString()}] Midnight approaches. Generating archive...`);
                     await createDailyArchive();
+                }, {
+                    timezone: "Asia/Kolkata"
                 });
     runSync();
     cron.schedule("* * * * *", runSync);

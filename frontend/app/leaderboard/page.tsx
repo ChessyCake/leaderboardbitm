@@ -102,15 +102,16 @@ export default function LeaderboardPage() {
       if (json.stats) {
         setStats(json.stats);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err?.message || "Failed to fetch data");
+      setError(err instanceof Error ? err.message : "Failed to fetch data");
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchLeaderboard(page);
   }, [page, fetchLeaderboard]);
 
@@ -166,7 +167,7 @@ export default function LeaderboardPage() {
                 background: "var(--lb-surface)",
               }}
             >
-              // LOADING_MANIFEST...
+              {"// LOADING_MANIFEST..."}
             </span>
           </div>
 
@@ -326,7 +327,7 @@ export default function LeaderboardPage() {
               background: "var(--lb-surface)",
             }}
           >
-            // ACTIVE_MANIFEST
+            {"// ACTIVE_MANIFEST"}
           </span>
 
           {/* Result count */}

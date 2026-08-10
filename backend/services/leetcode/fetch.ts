@@ -5,7 +5,7 @@ interface UserInfo {
     lastSolvedID: string | null;
 }
 
-// Updated exactly to match your working Postman query
+
 const QUERY = `
 query recentAcSubmissions($username: String!) {
   recentAcSubmissionList(username: $username) {
@@ -29,7 +29,6 @@ export const getSub = async ({
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                // Passing a generic User-Agent and Referer helps avoid blocks
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                 "Referer": "https://leetcode.com/",
             },
@@ -43,12 +42,12 @@ export const getSub = async ({
 
         if (!response.ok) {
             console.error(`[LeetCode API] HTTP ${response.status} for ${username}`);
-            return []; // Return empty so it doesn't crash
+            return [];
         }
 
         const data = await response.json();
 
-        // Safety check
+     
         if (!data || !data.data || !data.data.recentAcSubmissionList) {
             console.error(`[LeetCode API] Missing data for ${username}`);
             return [];
@@ -57,7 +56,6 @@ export const getSub = async ({
         const page = data.data.recentAcSubmissionList;
 
         for (const sub of page) {
-            // STOP parsing if we hit a submission we've already saved to the database
             if (lastSolvedID && sub.id === lastSolvedID) {
                 break; 
             }

@@ -11,6 +11,8 @@ import {
   LogOut,
   Edit2,
   Check,
+  MessageCircleQuestion,
+  Users,
 } from "lucide-react";
 
 
@@ -22,6 +24,8 @@ import { FaDiscord } from "react-icons/fa6";
 const NAV_ITEMS = [
   { label: "RANKINGS", icon: Trophy, href: "/leaderboard" },
   { label: "ARCHIVE", icon: Archive, href: "/archive" },
+  { label: "FAQ", icon: MessageCircleQuestion, href: "/faq" },
+  { label: "CREDITS", icon: Users, href: "/credits" },
 ];
 
 interface UserProfile {
@@ -147,6 +151,7 @@ export default function Sidebar() {
             style={{ borderColor: "var(--lb-border-accent)", background: "var(--lb-surface)" }}
           >
             {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img src={avatarUrl} alt="avatar" className="w-10 h-10 object-contain" />
             ) : (
               <div className="w-10 h-10 rounded-sm animate-pulse" style={{ background: "var(--lb-surface)" }} />
@@ -171,7 +176,7 @@ export default function Sidebar() {
           {/* Sign Out */}
           <button
             onClick={handleSignOut}
-            className="mt-3 flex items-center gap-2 font-mono text-[10px] tracking-wider transition-colors hover:opacity-100 opacity-60"
+            className="mt-3 flex items-center gap-2 font-mono text-[10px] tracking-wider transition-colors hover:opacity-100 opacity-60 cursor-pointer"
             style={{ color: "var(--lb-text-muted)" }}
           >
             <LogOut size={11} />

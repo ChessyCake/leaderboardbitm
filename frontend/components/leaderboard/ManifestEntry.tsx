@@ -14,13 +14,11 @@ interface ManifestEntryProps {
 
 export default function ManifestEntry({ user, rank }: ManifestEntryProps) {
   const isFirst = rank === 1;
-  const tier = user.tier;
-  const role = user.role;
   const displayName =
     user.name?.toUpperCase() ||
     user.codeforcesUsername?.toUpperCase().replace(/\s/g, "_") ||
     "UNKNOWN";
-  const userId = user.id ?? Math.floor(1000 + Math.random() * 9000);
+  const userId = user.id ? String(user.id).slice(-4) : "XXXX";
   const rankStr = String(rank).padStart(2, "0");
   const isActive = user.todaySolved > 0;
 

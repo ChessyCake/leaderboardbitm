@@ -16,7 +16,7 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
 
-      const email = profile.emails?.[0].value;
+      const email = profile.emails?.[0]?.value;
 
      if (!email) {
   return done(null, false, {
@@ -39,7 +39,7 @@ passport.use(
           googleID: profile.id,
           name: profile.displayName,
           email,
-          avatar: profile.photos?.[0].value
+          avatar: profile.photos?.[0]?.value
         })
       }
 

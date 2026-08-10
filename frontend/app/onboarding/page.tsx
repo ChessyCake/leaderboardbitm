@@ -115,7 +115,7 @@ export default function Onboarding() {
                           name="platform"
                           value={opt}
                           checked={platform === opt}
-                          onChange={(e) => setPlatform(e.target.value as any)}
+                          onChange={(e) => setPlatform(e.target.value as "both" | "leetcode" | "codeforces")}
                           className="w-4 h-4 accent-[#ccff00]"
                         />
                         <span className="font-mono text-sm uppercase text-foreground">{opt}</span>

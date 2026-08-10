@@ -87,6 +87,7 @@ export default function ArchivePage() {
   const days = useMemo(() => getPast7Days(), []);
   const [selectedDate, setSelectedDate] = useState(days[0].key);
   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [archivesData, setArchivesData] = useState<any[]>([]);
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
   const [stats, setStats] = useState<StatsOverview>({ activeToday: 0, solvedToday: 0, cfSolvedToday: 0, lcSolvedToday: 0 });
@@ -113,6 +114,7 @@ export default function ArchivePage() {
         let totalCf = 0;
         let totalLc = 0;
         let online = 0;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         json.data.forEach((day: any) => {
           totalCf += day.total_CFsolved || 0;
           totalLc += day.total_LCsolved || 0;
@@ -127,20 +129,22 @@ export default function ArchivePage() {
       } else {
         throw new Error(json.message || "Failed to fetch archive data");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error fetching archive:", err);
-      setError(err.message || "Archive API offline");
+      setError(err instanceof Error ? err.message : "Archive API offline");
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchAllArchives();
   }, [fetchAllArchives]);
 
   useEffect(() => {
     // The archive date field may be a timestamp (ms) or ISO string — handle both
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dayArchive = archivesData.find((d: any) => {
       const raw = d.date;
       let dateStr: string;
@@ -155,6 +159,7 @@ export default function ArchivePage() {
 
     if (dayArchive) {
       const mapped: LeaderboardUser[] = (dayArchive.top_users || []).map(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (u: any, idx: number) => ({
           rank: idx + 1,
           name: u.name,
@@ -171,6 +176,7 @@ export default function ArchivePage() {
           cfRating: 0,
         })
       );
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUsers(mapped);
       setTotalUsers(dayArchive.total_online || 0);
       setStats({
@@ -255,7 +261,7 @@ export default function ArchivePage() {
                 background: "var(--lb-surface)",
               }}
             >
-              // LOADING_ARCHIVE...
+              {"// LOADING_ARCHIVE..."}
             </span>
           </div>
 
@@ -340,7 +346,7 @@ export default function ArchivePage() {
 
       {/* Per-day Stats Grid — updates on date selection */}
       <div className="mt-8">
-        <DayStatsGrid stats={stats} selectedDate={selectedDate} />
+        <DayStatsGrid stats={stats} />
       </div>
 
       {/* Weekly summary strip */}
@@ -396,7 +402,7 @@ export default function ArchivePage() {
               background: "var(--lb-surface)",
             }}
           >
-            // ARCHIVE_MANIFEST — {selectedDate}
+            {"// ARCHIVE_MANIFEST —"} {selectedDate}
           </span>
 
           <span
@@ -540,7 +546,7 @@ function ArchiveHeader() {
             className="block skew-x-3 font-display text-2xl sm:text-4xl md:text-5xl font-black tracking-tight"
             style={{ color: "var(--lb-accent-text)" }}
           >
-            // ARCHIVE
+            {"// ARCHIVE"}
           </span>
         </div>
       </div>
@@ -677,7 +683,7 @@ function DateFilter({
 }
 
 /* ── Day Stats Grid ── */
-function DayStatsGrid({ stats, selectedDate }: { stats: StatsOverview; selectedDate: string }) {
+function DayStatsGrid({ stats }: { stats: StatsOverview }) {
   return (
     <div
       className="grid grid-cols-2 lg:grid-cols-4 gap-px w-full"

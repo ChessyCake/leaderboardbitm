@@ -1,4 +1,5 @@
 import "dotenv/config";
+process.env.TZ = "Asia/Kolkata";
 import app from "./app/app"
 import { connectDB } from "./config/db"
 import { startPoller } from "./services/poller";

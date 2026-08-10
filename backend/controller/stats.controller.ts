@@ -5,36 +5,54 @@ import User from "../models/users.model";
 
 export const getOverallStats = async (req: Request, res: Response) => {
     try {
-        const [cfStats] = await Codeforces.aggregate([
+        const [activeCountResult] = await User.aggregate([
             {
-                $group: {
-                    _id: null,
-                    solvedToday: { $sum: "$todaySolved" },
-                    activeStreaks: {
-                        $sum: { $cond: [{ $gt: ["$streak", 0] }, 1, 0] },
-                    },
+                $lookup: {
+                    from: Codeforces.collection.name,
+                    localField: "_id",
+                    foreignField: "user",
+                    as: "cf",
                 },
             },
-        ]);
-
-        const [lcStats] = await LeetCode.aggregate([
+            { $unwind: { path: "$cf", preserveNullAndEmptyArrays: true } },
             {
-                $group: {
-                    _id: null,
-                    solvedToday: { $sum: "$todaySolved" },
-                    activeStreaks: {
-                        $sum: { $cond: [{ $gt: ["$streak", 0] }, 1, 0] },
-                    },
+                $lookup: {
+                    from: LeetCode.collection.name,
+                    localField: "_id",
+                    foreignField: "user",
+                    as: "lc",
                 },
             },
+            { $unwind: { path: "$lc", preserveNullAndEmptyArrays: true } },
+            {
+                $addFields: {
+                    todaySolved: {
+                        $add: [
+                            { $ifNull: ["$cf.todaySolved", 0] },
+                            { $ifNull: ["$lc.todaySolved", 0] },
+                        ],
+                    },
+                    activeCFStreak: { $cond: [{ $gt: ["$cf.streak", 0] }, 1, 0] },
+                    activeLCStreak: { $cond: [{ $gt: ["$lc.streak", 0] }, 1, 0] }
+                },
+            },
+            { $match: { todaySolved: { $gt: 0 } } },
+            { 
+                $group: {
+                    _id: null,
+                    totalActive: { $sum: 1 },
+                    cfSolvedToday: { $sum: "$cf.todaySolved" },
+                    lcSolvedToday: { $sum: "$lc.todaySolved" },
+                    totalCFStreaks: { $sum: "$activeCFStreak" },
+                    totalLCStreaks: { $sum: "$activeLCStreak" }
+                }
+            }
         ]);
 
-        const activeCFUsers = await Codeforces.find({ todaySolved: { $gt: 0 } }).distinct("user");
-        const activeLCUsers = await LeetCode.find({ todaySolved: { $gt: 0 } }).distinct("user");
-        const activeUsersSet = new Set([
-            ...activeCFUsers.map(id => id.toString()),
-            ...activeLCUsers.map(id => id.toString())
-        ]);
+        const activeUsersCount = activeCountResult?.totalActive || 0;
+        const cfSolvedToday = activeCountResult?.cfSolvedToday || 0;
+        const lcSolvedToday = activeCountResult?.lcSolvedToday || 0;
+        const totalActiveStreaks = (activeCountResult?.totalCFStreaks || 0) + (activeCountResult?.totalLCStreaks || 0);
 
         const studentsOnline = await User.countDocuments({
             $or: [
@@ -48,10 +66,10 @@ export const getOverallStats = async (req: Request, res: Response) => {
             message: "Global stats fetched successfully",
             stats: {
                 studentsOnline,
-                activeToday: activeUsersSet.size,
-                totalCFSolvedToday: cfStats?.solvedToday || 0,
-                totalLCSolvedToday: lcStats?.solvedToday || 0,
-                totalActiveStreaks: (cfStats?.activeStreaks || 0) + (lcStats?.activeStreaks || 0),
+                activeToday: activeUsersCount,
+                totalCFSolvedToday: cfSolvedToday,
+                totalLCSolvedToday: lcSolvedToday,
+                totalActiveStreaks: totalActiveStreaks,
             }
         });
 

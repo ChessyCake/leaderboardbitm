@@ -8,8 +8,8 @@ const DEVELOPERS = [
   {
     sysCode: "DEV.01",
     name: "Harsh Raj Minj",
-    role: "Backend",
-    description: "Architecting and implementing the core backend systems, APIs, and database structures.",
+    role: "Tech Lead • Architecture • UI/UX & Backend",
+    description: "Masterminding the complete system architecture, spearheading major UI designs, and engineering the core backend infrastructure.",
     github: "#",
     linkedin: "#",
     email: "#",
@@ -42,19 +42,25 @@ export default function CreditsPage() {
     >
       <div className="flex-1 w-full max-w-4xl mx-auto">
         {/* Header Section */}
-        <header className="mb-6 sm:mb-8">
+        <header className="mb-10 sm:mb-14 relative text-center sm:text-left">
+          <div className="absolute top-1/2 left-0 sm:left-1/4 -translate-y-1/2 w-32 h-32 bg-[var(--lb-accent)] opacity-20 blur-[80px] rounded-full pointer-events-none" />
           <h1
-            className="font-display text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-none"
-            style={{ color: "var(--lb-text)" }}
+            className="font-display text-5xl sm:text-6xl md:text-7xl font-black tracking-tighter leading-none relative z-10"
+            style={{ 
+              color: "transparent",
+              WebkitTextStroke: "2px var(--lb-text)",
+              backgroundImage: "linear-gradient(to right, var(--lb-text), var(--lb-accent))",
+              WebkitBackgroundClip: "text"
+            }}
           >
             CREDITS
           </h1>
 
           <p
-            className="mt-4 font-mono text-sm sm:text-base tracking-wider max-w-xl font-semibold"
+            className="mt-4 font-mono text-sm sm:text-base tracking-widest max-w-xl font-medium relative z-10 uppercase mx-auto sm:mx-0"
             style={{ color: "var(--lb-accent)" }}
           >
-            Honoring the architects and engineers who built this platform.
+            {"// Honoring the architects and engineers who built this platform."}
           </p>
         </header>
 
@@ -69,7 +75,7 @@ export default function CreditsPage() {
             }}
           >
             <User size={14} style={{ color: "var(--lb-accent)" }} />
-            // DEVELOPERS
+            {"// DEVELOPERS"}
           </span>
           <span
             className="font-mono text-xs sm:text-sm tracking-wider hidden sm:inline-block"
@@ -92,10 +98,14 @@ export default function CreditsPage() {
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = "var(--lb-accent)";
                 e.currentTarget.style.background = "var(--lb-card-highlight-bg)";
+                e.currentTarget.style.boxShadow = "0 0 20px rgba(var(--lb-accent-rgb, 100, 255, 150), 0.15)";
+                e.currentTarget.style.transform = "translateY(-4px)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.borderColor = "var(--lb-border)";
                 e.currentTarget.style.background = "var(--lb-card-bg)";
+                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.transform = "translateY(0)";
               }}
             >
               <div className="flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
@@ -115,8 +125,8 @@ export default function CreditsPage() {
                      </h2>
                    </div>
                    <h3 
-                     className="font-mono text-sm sm:text-base uppercase tracking-widest mb-4"
-                     style={{ color: "var(--lb-text-secondary)" }}
+                     className="font-mono text-sm sm:text-base uppercase tracking-widest mb-4 font-bold"
+                     style={{ color: "var(--lb-accent)" }}
                    >
                      {'>'} {dev.role}
                    </h3>

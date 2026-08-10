@@ -6,7 +6,6 @@ import {
 } from "discord.js";
 import dotenv from "dotenv";
 
-import { registerMessageEvents } from "./events/messageCreate";
 import { registerInteractionEvents } from "./events/interactionCreate";
 import { currentStats } from "./events/liveStats";
 import { postLiveLeaderboard } from "./events/liveLeaderboard";
@@ -20,6 +19,8 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildPresences,
+    GatewayIntentBits.GuildMembers,
   ],
 });
 
@@ -35,12 +36,9 @@ client.once(Events.ClientReady, async (e) => {
   )
 
   if (livestats?.isTextBased()) {
-    // Run immediately once
     await currentStats(livestats as TextChannel);
     await postLiveLeaderboard(livestats as TextChannel);
-
-    // Schedule every 5 minutes
-    cron.schedule("*/5 * * * *", async () => {
+    cron.schedule("* * * * *", async () => {
       console.log("[CRON] Running live stats & leaderboard update...");
       await currentStats(livestats as TextChannel);
       await postLiveLeaderboard(livestats as TextChannel);
@@ -48,15 +46,13 @@ client.once(Events.ClientReady, async (e) => {
   }
 
   if (getleaderachive?.isTextBased()) {
-    // Schedule for 23:55 every day
-    cron.schedule("55 23 * * *", async () => {
+    cron.schedule("5 0 * * *", async () => {
       console.log("[CRON] Running daily archive post...");
       await postDailyArchive(getleaderachive as TextChannel);
     });
   }
 });
 
-registerMessageEvents(client);
 registerInteractionEvents(client);
 
 client.login(process.env.BOT_TOKEN);

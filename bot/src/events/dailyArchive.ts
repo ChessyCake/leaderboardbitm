@@ -1,5 +1,6 @@
 import { TextChannel, EmbedBuilder, AttachmentBuilder } from "discord.js";
 import { api } from "../services/api";
+import { EMOJI } from "../config/emojis";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -9,7 +10,8 @@ const __dirname = path.dirname(__filename);
 const BANNER_PATH = path.join(__dirname, "..", "assets", "archive_banner.png");
 
 // ── Theme ──
-const ARCHIVE_PURPLE = 0x8b5cf6;
+const THEME_RED = 0xff0000;
+const GLITCH_GIF = "https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif";
 
 export const postDailyArchive = async (
   channel: TextChannel
@@ -32,40 +34,7 @@ export const postDailyArchive = async (
       ? archive.top_users
       : [];
 
-    // ── Attach banner image ──
-    const bannerAttachment = new AttachmentBuilder(BANNER_PATH, {
-      name: "archive_banner.png",
-    });
-
-    // ── Build leaderboard with medals & bars ──
-    let leaderboard = "";
-
-    if (topUsers.length === 0) {
-      leaderboard = "> *No operators were active today.*\n";
-    } else {
-      topUsers.forEach((u: any, i: number) => {
-        const medal =
-          i === 0 ? "👑" : i === 1 ? "🥈" : i === 2 ? "🥉" : `\`${String(i + 1).padStart(2, "0")}\``;
-        const solved = u.totalSolvedToday ?? u.todaySolved ?? 0;
-        const solvedBar = "▰".repeat(Math.min(solved || 1, 10)) + "▱".repeat(Math.max(10 - (solved || 1), 0));
-        const nameUpper = (u.name || "UNKNOWN").toUpperCase();
-
-        // Show CF/LC breakdown if available
-        const cfVal = u.cfSolvedToday ?? 0;
-        const lcVal = u.lcSolvedToday ?? 0;
-        const cfTag = cfVal > 0 ? `🟠 CF:\`${cfVal}\`` : "";
-        const lcTag = lcVal > 0 ? `🟡 LC:\`${lcVal}\`` : "";
-        const platforms = [cfTag, lcTag].filter(Boolean).join("  ");
-        const platformStr = platforms ? ` ─ ${platforms}` : "";
-
-        if (i < 3) {
-          leaderboard += `> ${medal}  **${nameUpper}**\n`;
-          leaderboard += `> \`${solvedBar}\` **${solved}** solved${platformStr}\n\n`;
-        } else {
-          leaderboard += `> ${medal}  **${nameUpper}** ── **${solved}** solved${platformStr}\n`;
-        }
-      });
-    }
+    // Banner removed in favor of Glitch GIF
 
     // ── Format the date nicely ──
     const archiveDate = new Date(archive.date).toLocaleDateString("en-US", {
@@ -85,44 +54,44 @@ export const postDailyArchive = async (
     const cfSolved = archive.total_CFsolved ?? 0;
     const lcSolved = archive.total_LCsolved ?? 0;
 
-    // ── Build description ──
-    let desc = "";
+    let description = `**${EMOJI.bullet} ARCHIVE SNAPSHOT ── ${archiveDate}**\n> Total online: **${archive.total_online ?? 0}**\n\n`;
 
-    desc += `### 🏆 ── TOP OPERATORS\n\n`;
-    desc += leaderboard;
-    desc += `\n### 📊 ── DAY SUMMARY\n\n`;
+    if (topUsers.length === 0) {
+      description += `**${EMOJI.sparkle} STANDINGS**\n> No operators were active today.\n\n`;
+    } else {
+      description += `**${EMOJI.crown} TOP OPERATORS**\n`;
+      topUsers.forEach((u: any, i: number) => {
+        const medal = i === 0 ? EMOJI.crown : i === 1 ? EMOJI.silver : i === 2 ? EMOJI.bronze : `\`${String(i + 1).padStart(2, "0")}\``;
+        const solved = u.totalSolvedToday ?? u.todaySolved ?? 0;
+        const nameUpper = (u.name || "UNKNOWN").toUpperCase();
 
-    desc += `> 👥 **Active Operators** ── **\`${archive.total_online ?? 0}\`**\n\n`;
+        const cfVal = u.cfSolvedToday ?? 0;
+        const lcVal = u.lcSolvedToday ?? 0;
+        const cfTag = cfVal > 0 ? `${EMOJI.cf} CF: \`${cfVal}\`` : "";
+        const lcTag = lcVal > 0 ? `${EMOJI.lc} LC: \`${lcVal}\`` : "";
+        const platforms = [cfTag, lcTag].filter(Boolean).join(" | ");
+        const platformStr = platforms ? ` ─ ${platforms}` : "";
 
-    desc += `> ⚡ **Total Solved** ────── **\`${totalSolved}\`**\n`;
-    desc += `> \`${bar(totalSolved, totalSolved || 1)}\`\n\n`;
+        description += `> ${medal} **${nameUpper}**: **${solved}** Solved\n> └ ${platformStr}\n`;
+      });
+      description += `\n`;
+    }
 
-    desc += `> 🟠 **Codeforces** ─────── **\`${cfSolved}\`** solved\n`;
-    desc += `> \`${bar(cfSolved, totalSolved || 1)}\`\n\n`;
-
-    desc += `> 🟡 **LeetCode** ──────── **\`${lcSolved}\`** solved\n`;
-    desc += `> \`${bar(lcSolved, totalSolved || 1)}\`\n\n`;
-
-    desc += `-# This snapshot was automatically captured at end of day`;
+    description += `**${EMOJI.stats} DAY SUMMARY**\n`;
+    description += `> Total Solved: **${totalSolved}**\n`;
+    description += `> ${EMOJI.cf} Codeforces: **${cfSolved}**  |  ${EMOJI.lc} LeetCode: **${lcSolved}**\n`;
 
     const embed = new EmbedBuilder()
-      .setColor(ARCHIVE_PURPLE)
-      .setAuthor({
-        name: "COMP_LEAGUE ⚡ DAILY ARCHIVE",
-        iconURL: "https://cdn.discordapp.com/emojis/1145727546653970432.gif",
-      })
-      .setTitle("⟨🏆⟩ ── ARCHIVE SNAPSHOT ── ⟨🏆⟩")
-      .setDescription(desc)
-      .setImage("attachment://archive_banner.png")
+      .setColor(THEME_RED)
+      .setDescription(description.trimEnd())
+      .setImage(GLITCH_GIF)
       .setFooter({
-        text: "COMP_LEAGUE • DAILY SNAPSHOT • ARCHIVED",
+        text: "COMP_LEAGUE • DAILY SNAPSHOT",
         iconURL: "https://cdn.discordapp.com/emojis/1145727546653970432.gif",
-      })
-      .setTimestamp(new Date(archive.date));
+      });
 
     await channel.send({
       embeds: [embed],
-      files: [bannerAttachment],
     });
 
     console.log("Archive posted successfully");

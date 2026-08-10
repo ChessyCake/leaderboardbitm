@@ -73,7 +73,7 @@ export const getLeaderboard = async (req: Request, res: Response) => {
       { $limit: limit },
     ]);
 
-    // Count active users separately for accurate pagination
+    
     const [activeCountResult] = await User.aggregate([
       {
         $lookup: {
@@ -104,10 +104,19 @@ export const getLeaderboard = async (req: Request, res: Response) => {
         },
       },
       { $match: { todaySolved: { $gt: 0 } } },
-      { $count: "total" },
+      { 
+        $group: {
+          _id: null,
+          totalActive: { $sum: 1 },
+          cfSolvedToday: { $sum: "$cf.todaySolved" },
+          lcSolvedToday: { $sum: "$lc.todaySolved" }
+        }
+      }
     ]);
 
-    const activeUsersCount = activeCountResult?.total || 0;
+    const activeUsersCount = activeCountResult?.totalActive || 0;
+    const cfSolvedToday = activeCountResult?.cfSolvedToday || 0;
+    const lcSolvedToday = activeCountResult?.lcSolvedToday || 0;
 
     const leaderboard = users.map((u, index) => ({
       rank: skip + index + 1,
@@ -129,25 +138,18 @@ export const getLeaderboard = async (req: Request, res: Response) => {
       lcStreak: u.lc?.streak || 0,
     }));
 
-    const [cfStats] = await Codeforces.aggregate([
-        { $group: { _id: null, solvedToday: { $sum: "$todaySolved" } } }
-    ]);
-    const [lcStats] = await LeetCode.aggregate([
-        { $group: { _id: null, solvedToday: { $sum: "$todaySolved" } } }
-    ]);
-
     const stats = {
         activeToday: activeUsersCount,
-        solvedToday: (cfStats?.solvedToday || 0) + (lcStats?.solvedToday || 0),
-        cfSolvedToday: cfStats?.solvedToday || 0,
-        lcSolvedToday: lcStats?.solvedToday || 0,
+        solvedToday: cfSolvedToday + lcSolvedToday,
+        cfSolvedToday: cfSolvedToday,
+        lcSolvedToday: lcSolvedToday,
     };
 
     return res.json({
       success: true,
       page,
       totalPages: Math.ceil(activeUsersCount / limit),
-      totalUsers: activeUsersCount,
+      totalUsers: totalUsers,
       leaderboard,
       stats,
     });

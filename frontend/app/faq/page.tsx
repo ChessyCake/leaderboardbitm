@@ -65,7 +65,7 @@ export default function FAQPage() {
                 className="block skew-x-3 font-display text-2xl sm:text-4xl md:text-5xl font-black tracking-tight"
                 style={{ color: "var(--lb-accent-text)" }}
               >
-                // F.A.Q
+                {"// F.A.Q"}
               </span>
             </div>
           </div>
@@ -89,7 +89,7 @@ export default function FAQPage() {
             }}
           >
             <MessageCircleQuestion size={14} style={{ color: "var(--lb-accent)" }} />
-            // KNOWLEDGE_BASE
+            {"// KNOWLEDGE_BASE"}
           </span>
           <span
             className="font-mono text-xs sm:text-sm tracking-wider hidden sm:inline-block"
