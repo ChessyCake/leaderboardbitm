@@ -18,7 +18,7 @@ const app = express();
 app.use(
   cors({
     origin: (origin, callback) => {
-      callback(null, true);
+      callback(null, origin || "http://localhost:3000");
     },
     credentials: true,
   })
