@@ -17,7 +17,7 @@ const app = express();
 
 const allowedOrigins = [
   process.env.BOT_URL,
-  process.env.BACKEND_URL,
+  process.env.FRONTEND_URL,
 ];
 
 app.use(cors({
