@@ -15,14 +15,23 @@ import botRoutes from "../routes/bot.routes";
 
 const app = express();
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      callback(null, origin || "http://localhost:3000");
-    },
-    credentials: true,
-  })
-);
+const allowedOrigins = [
+  process.env.BOT_URL,
+  process.env.BACKEND_URL,
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if(!origin) return callback(null,true)
+
+      if(allowedOrigins.includes(origin)){
+        callback(null, true)
+      } else {
+        callback( new Error('CORS not allowed'))
+      }
+  },
+  credentials: true
+}))
 
 app.use(express.json());
 app.use(cookieParser());
