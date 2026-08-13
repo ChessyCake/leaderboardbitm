@@ -22,8 +22,22 @@ export const setUsernames = async ( req: Request, res: Response) => {
         })
     }
 
-    user.codeforces_username = codeforces
-    user.leetcode_username = leetcode
+    const trimmedLeetcode = leetcode?.trim();
+    const trimmedCodeforces = codeforces?.trim();
+
+    if (!trimmedLeetcode && !trimmedCodeforces) {
+        return res.status(400).json({
+            success: false,
+            message: "Please provide at least one platform username"
+        });
+    }
+
+    if (trimmedCodeforces) {
+        user.codeforces_username = trimmedCodeforces;
+    }
+    if (trimmedLeetcode) {
+        user.leetcode_username = trimmedLeetcode;
+    }
 
     user.onboarded = true
     await user.save()

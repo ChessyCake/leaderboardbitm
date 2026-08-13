@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ThemeProvider from "@/components/ThemeProvider";
-import Navbar from "@/components/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,7 +16,28 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "COMP_LEAGUE // Rankings",
   description:
-    "Competitive programming leaderboard — track streaks, ratings, and daily progress.",
+    "Competitive programming leaderboard — track streaks, ratings, and daily progress for Codeforces and LeetCode.",
+  keywords: [
+    "competitive programming",
+    "leaderboard",
+    "Codeforces",
+    "LeetCode",
+    "coding streak",
+    "algorithm rankings",
+  ],
+  authors: [{ name: "COMP_LEAGUE" }],
+  openGraph: {
+    title: "COMP_LEAGUE // Rankings",
+    description: "Competitive programming leaderboard — track streaks, ratings, and daily progress.",
+    type: "website",
+    locale: "en_US",
+    siteName: "COMP_LEAGUE",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "COMP_LEAGUE // Rankings",
+    description: "Competitive programming leaderboard — track streaks, ratings, and daily progress.",
+  },
 };
 
 export default function RootLayout({
@@ -33,9 +53,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
-          {/* <Navbar /> */}
           {children}
-          {/* <Footer /> */}
         </ThemeProvider>
       </body>
     </html>

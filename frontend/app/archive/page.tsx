@@ -21,6 +21,7 @@ import {
   Database,
   ExternalLink,
   ChevronRight,
+  Trophy,
 } from "lucide-react";
 
 /* ── Helpers ── */
@@ -50,34 +51,34 @@ function getPast7Days(): { key: string; label: string; date: Date }[] {
 
 const DISCORD_LINK = "https://discord.gg/jTTckmfwfR";
 
-/* ── Weekly Stats Card Config ── */
-const WEEKLY_CARD_CONFIG = [
+/* ── Day Stats Card Config ── */
+const DAY_CARD_CONFIG = [
   {
-    sysCode: "ARC.01",
-    label: "CF SOLVED (WEEK)",
-    key: "totalCfSolved" as const,
+    sysCode: "ARC.D1",
+    label: "CF SOLVED (DAY)",
+    key: "cfSolvedToday" as const,
     icon: Code2,
     highlight: true,
   },
   {
-    sysCode: "ARC.02",
-    label: "LC SOLVED (WEEK)",
-    key: "totalLcSolved" as const,
+    sysCode: "ARC.D2",
+    label: "LC SOLVED (DAY)",
+    key: "lcSolvedToday" as const,
     icon: Braces,
     highlight: false,
   },
   {
-    sysCode: "ARC.03",
-    label: "ONLINE USERS (WEEK)",
-    key: "onlineUsers" as const,
+    sysCode: "ARC.D3",
+    label: "ACTIVE USERS (DAY)",
+    key: "activeToday" as const,
     icon: Users,
     highlight: false,
   },
   {
-    sysCode: "ARC.04",
-    label: "DAYS ARCHIVED",
-    key: "daysArchived" as const,
-    icon: Database,
+    sysCode: "ARC.D4",
+    label: "TOTAL SOLVED (DAY)",
+    key: "solvedToday" as const,
+    icon: Trophy,
     highlight: false,
   },
 ];
@@ -86,6 +87,7 @@ export default function ArchivePage() {
   const days = useMemo(() => getPast7Days(), []);
   const [selectedDate, setSelectedDate] = useState(days[0].key);
   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [archivesData, setArchivesData] = useState<any[]>([]);
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
   const [stats, setStats] = useState<StatsOverview>({ activeToday: 0, solvedToday: 0, cfSolvedToday: 0, lcSolvedToday: 0 });
@@ -112,6 +114,7 @@ export default function ArchivePage() {
         let totalCf = 0;
         let totalLc = 0;
         let online = 0;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         json.data.forEach((day: any) => {
           totalCf += day.total_CFsolved || 0;
           totalLc += day.total_LCsolved || 0;
@@ -126,31 +129,41 @@ export default function ArchivePage() {
       } else {
         throw new Error(json.message || "Failed to fetch archive data");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error fetching archive:", err);
-      setError(err.message || "Archive API offline");
+      setError(err instanceof Error ? err.message : "Archive API offline");
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchAllArchives();
   }, [fetchAllArchives]);
 
   useEffect(() => {
+    // The archive date field may be a timestamp (ms) or ISO string — handle both
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dayArchive = archivesData.find((d: any) => {
-      const dateObj = new Date(d.date);
-      return dateObj.toISOString().split("T")[0] === selectedDate;
+      const raw = d.date;
+      let dateStr: string;
+      if (typeof raw === "number") {
+        // It's a UTC midnight timestamp — convert to local date string
+        dateStr = new Date(raw).toLocaleDateString("en-CA"); // YYYY-MM-DD in local time
+      } else {
+        dateStr = new Date(raw).toLocaleDateString("en-CA");
+      }
+      return dateStr === selectedDate;
     });
 
     if (dayArchive) {
       const mapped: LeaderboardUser[] = (dayArchive.top_users || []).map(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (u: any, idx: number) => ({
           rank: idx + 1,
           name: u.name,
           avatar: "",
-          codeforcesUsername: u.name,
           streak: 0,
           todaySolved: u.totalSolvedToday || (u.cfSolved + u.lcSolved),
           totalSolved: 0,
@@ -163,6 +176,7 @@ export default function ArchivePage() {
           cfRating: 0,
         })
       );
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUsers(mapped);
       setTotalUsers(dayArchive.total_online || 0);
       setStats({
@@ -196,7 +210,7 @@ export default function ArchivePage() {
   if (loading) {
     return (
       <div
-        className="min-h-screen px-3 sm:px-6 md:px-10 py-6 sm:py-8 md:py-12 w-full overflow-hidden"
+        className="min-h-screen px-3 sm:px-6 md:px-10 pt-16 pb-6 sm:py-8 md:py-12 w-full overflow-hidden"
         style={{ background: "var(--lb-bg)" }}
       >
         {/* Header skeleton */}
@@ -247,7 +261,7 @@ export default function ArchivePage() {
                 background: "var(--lb-surface)",
               }}
             >
-              // LOADING_ARCHIVE...
+              {"// LOADING_ARCHIVE..."}
             </span>
           </div>
 
@@ -319,7 +333,7 @@ export default function ArchivePage() {
   }
 
   return (
-    <div className="min-h-screen px-3 sm:px-6 md:px-10 py-6 sm:py-8 md:py-12 w-full overflow-hidden">
+    <div className="min-h-screen px-3 sm:px-6 md:px-10 pt-16 pb-6 sm:py-8 md:py-12 w-full overflow-hidden">
       {/* Header */}
       <ArchiveHeader />
 
@@ -330,9 +344,28 @@ export default function ArchivePage() {
         onSelect={handleDateSelect}
       />
 
-      {/* Weekly Stats Grid */}
+      {/* Per-day Stats Grid — updates on date selection */}
       <div className="mt-8">
-        <WeeklyStatsGrid stats={weeklyStats} />
+        <DayStatsGrid stats={stats} />
+      </div>
+
+      {/* Weekly summary strip */}
+      <div
+        className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-1 px-4 py-2 border"
+        style={{ borderColor: "var(--lb-border)", background: "var(--lb-surface)" }}
+      >
+        <span className="font-mono text-[9px] tracking-widest uppercase" style={{ color: "var(--lb-text-dim)" }}>
+          7-DAY TOTALS:
+        </span>
+        <span className="font-mono text-[10px] tracking-wider" style={{ color: "var(--lb-text-muted)" }}>
+          CF <span style={{ color: "var(--lb-accent)" }}>{weeklyStats.totalCfSolved}</span>
+        </span>
+        <span className="font-mono text-[10px] tracking-wider" style={{ color: "var(--lb-text-muted)" }}>
+          LC <span style={{ color: "var(--lb-text)" }}>{weeklyStats.totalLcSolved}</span>
+        </span>
+        <span className="font-mono text-[10px] tracking-wider" style={{ color: "var(--lb-text-muted)" }}>
+          DAYS <span style={{ color: "var(--lb-text)" }}>{weeklyStats.daysArchived}</span>
+        </span>
       </div>
 
       {/* Data source indicator */}
@@ -369,7 +402,7 @@ export default function ArchivePage() {
               background: "var(--lb-surface)",
             }}
           >
-            // ARCHIVE_MANIFEST — {selectedDate}
+            {"// ARCHIVE_MANIFEST —"} {selectedDate}
           </span>
 
           <span
@@ -513,7 +546,7 @@ function ArchiveHeader() {
             className="block skew-x-3 font-display text-2xl sm:text-4xl md:text-5xl font-black tracking-tight"
             style={{ color: "var(--lb-accent-text)" }}
           >
-            // ARCHIVE
+            {"// ARCHIVE"}
           </span>
         </div>
       </div>
@@ -649,14 +682,14 @@ function DateFilter({
   );
 }
 
-/* ── Weekly Stats Grid ── */
-function WeeklyStatsGrid({ stats }: { stats: WeeklyStats }) {
+/* ── Day Stats Grid ── */
+function DayStatsGrid({ stats }: { stats: StatsOverview }) {
   return (
     <div
       className="grid grid-cols-2 lg:grid-cols-4 gap-px w-full"
       style={{ background: "var(--lb-border)" }}
     >
-      {WEEKLY_CARD_CONFIG.map(
+      {DAY_CARD_CONFIG.map(
         ({ sysCode, label, key, icon: Icon, highlight }) => (
           <div
             key={sysCode}

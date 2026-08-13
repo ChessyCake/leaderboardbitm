@@ -36,7 +36,9 @@ export const createDailyArchive = async () => {
         const userMap = new Map();
 
         for (const cf of activeCF) {
+            if (!cf.user) continue; 
             total_CFsolved += cf.todaySolved;
+
             const userId = (cf.user as any)._id.toString();
             
             userMap.set(userId, {
@@ -48,7 +50,9 @@ export const createDailyArchive = async () => {
         }
 
         for (const lc of activeLC) {
+            if (!lc.user) continue; 
             total_LCsolved += lc.todaySolved;
+
             const userId = (lc.user as any)._id.toString();
             
             if (userMap.has(userId)) {

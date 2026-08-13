@@ -10,7 +10,7 @@ export const getSub = async ({
     lastSolvedID,
 }: UserInfo): Promise<Submission[]> => {
 
-    const limit = lastSolvedID ? 100 : 5000;
+    const limit = 200;
 
     try {
         const response = await fetch(
@@ -26,11 +26,6 @@ export const getSub = async ({
         const submissions: Submission[] = [];
 
         for (const sub of data.result) {
-            // STOP fetching if we hit the submission we already recorded last time!
-            if (lastSolvedID && sub.id === lastSolvedID) {
-                break;
-            }
-
             submissions.push({
                 platform: "codeforces",
                 submissionID: sub.id,

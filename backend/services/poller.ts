@@ -11,6 +11,14 @@ import { getSub as getLCSub } from "./leetcode/fetch";
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
+/** Returns "YYYY-MM-DD" in local time — used for robust day comparison */
+const localDateStr = (date: Date = new Date()): string => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+};
+
 const syncCodeforces = async (user: any) => {
     try {
         if (!user.codeforces_username) return;
@@ -18,70 +26,83 @@ const syncCodeforces = async (user: any) => {
         let cfDoc = await Codeforces.findOne({ user: user._id });
         if (!cfDoc) cfDoc = new Codeforces({ user: user._id });
 
+        
         const submissions = await getCFSub({
             username: user.codeforces_username,
-            lastSolvedID: cfDoc.lastSubmissionId || null, 
+            lastSolvedID: null, 
         });
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayTime = today.getTime();
+        if (submissions.length === 0) {
+            cfDoc.lastSyncedAt = new Date();
+            await cfDoc.save();
+            return;
+        }
+
+        const todayStr = localDateStr();
+        const todayMidnight = new Date(); todayMidnight.setHours(0, 0, 0, 0);
+        const todayTime = todayMidnight.getTime();
         const yesterdayTime = todayTime - ONE_DAY;
 
+        const lastKnownId = cfDoc.lastSubmissionId || 0;
 
-        if ((cfDoc.lastSolvedDay || 0) < todayTime) {
-            cfDoc.todaySolved = 0;
-        }
+        
+        const chronologicalSubs = [...submissions].reverse();
 
-        if (submissions.length > 0) {
-            const chronologicalSubs = [...submissions].reverse();
-            let maxSafeId = cfDoc.lastSubmissionId || 0;
-            let loggedUpdate = false;
+        let maxSeenId = lastKnownId;
+        let todaySolvedCount = 0; 
 
-            for (const sub of chronologicalSubs) {
-                if (sub.verdict === "TESTING" || sub.verdict === "WAITING") {
-                    break; 
+        for (const sub of chronologicalSubs) {
+            if (sub.verdict === "TESTING" || sub.verdict === "WAITING") continue;
+
+            const isNew = Number(sub.submissionID) > lastKnownId;
+
+            if (sub.verdict === "OK") {
+                const subDate = new Date(sub.timestamp * 1000);
+                const subDayStr = localDateStr(subDate);
+
+            
+                if (subDayStr === todayStr) {
+                    todaySolvedCount += 1;
                 }
-
-                if (sub.verdict === "OK") {
+                if (isNew) {
                     cfDoc.totalSolved += 1;
-                    
-                    const subDate = new Date(sub.timestamp * 1000);
+
                     subDate.setHours(0, 0, 0, 0);
                     const subDay = subDate.getTime();
-                    
-                    if (subDay === todayTime) {
-                        cfDoc.todaySolved += 1;
-                    }
-
                     const currentLastDay = cfDoc.lastSolvedDay || 0;
-                    
+
                     if (currentLastDay === 0) {
                         cfDoc.streak = 1;
-                    } else if (subDay === currentLastDay + ONE_DAY) {
-                        cfDoc.streak += 1;
-                    } else if (subDay > currentLastDay + ONE_DAY) {
-                        cfDoc.streak = 1;
+                    } else {
+                        const diffDays = Math.round((subDay - currentLastDay) / ONE_DAY);
+                        if (diffDays === 1) {
+                            cfDoc.streak += 1;
+                        } else if (diffDays > 1) {
+                            cfDoc.streak = 1;
+                        }
                     }
-                    
+
                     cfDoc.lastSolvedDay = subDay;
-                    loggedUpdate = true;
                 }
-                
-            
-                maxSafeId = Number(sub.submissionID);
             }
 
-            cfDoc.lastSubmissionId = maxSafeId;
-            
-            if (loggedUpdate) {
-                console.log(`[Codeforces] Synced NEW data for ${user.codeforces_username}`);
+            if (Number(sub.submissionID) > maxSeenId) {
+                maxSeenId = Number(sub.submissionID);
             }
         }
 
-        if ((cfDoc.lastSolvedDay || 0) < yesterdayTime) {
-            cfDoc.streak = 0;
+        cfDoc.todaySolved = todaySolvedCount;
+        cfDoc.lastSubmissionId = maxSeenId;
+
+        const currentCFLastDay = cfDoc.lastSolvedDay || 0;
+        if (currentCFLastDay > 0) {
+            const diffDays = Math.round((todayTime - currentCFLastDay) / ONE_DAY);
+            if (diffDays > 1) {
+                cfDoc.streak = 0;
+            }
         }
+
+        console.log(`[CF] ${user.codeforces_username} | todaySolved=${cfDoc.todaySolved} | streak=${cfDoc.streak}`);
 
         cfDoc.lastSyncedAt = new Date();
         await cfDoc.save();
@@ -100,65 +121,69 @@ const syncLeetCode = async (user: any) => {
 
         const submissions = await getLCSub({
             username: user.leetcode_username,
-            lastSolvedID: lcDoc.lastSubmissionID || null, 
+            lastSolvedID: lcDoc.lastSubmissionID || null,
         });
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayTime = today.getTime();
+        const todayStr = localDateStr();
+        const todayMidnight = new Date(); todayMidnight.setHours(0, 0, 0, 0);
+        const todayTime = todayMidnight.getTime();
         const yesterdayTime = todayTime - ONE_DAY;
 
-        let lastDay = 0;
-        if (lcDoc.lastSubmissionTime) {
-            const lDate = new Date(lcDoc.lastSubmissionTime);
-            lDate.setHours(0, 0, 0, 0);
-            lastDay = lDate.getTime();
-        }
+        const lastSolvedDayStr = lcDoc.lastSolvedDay
+            ? localDateStr(new Date(lcDoc.lastSolvedDay))
+            : null;
 
-        if (lastDay < todayTime) {
+        if (lastSolvedDayStr !== todayStr) {
             lcDoc.todaySolved = 0;
         }
 
         if (submissions.length > 0) {
             const chronologicalSubs = [...submissions].reverse();
-            let loggedUpdate = false;
 
             for (const sub of chronologicalSubs) {
-              
                 if (sub.verdict === "OK") {
                     lcDoc.totalSolved += 1;
-                    
+
                     const subDate = new Date(sub.timestamp * 1000);
-                    subDate.setHours(0, 0, 0, 0);
-                    const subDay = subDate.getTime();
-                    
-                    if (subDay === todayTime) {
+                    const subDayStr = localDateStr(subDate);
+
+                    if (subDayStr === todayStr) {
                         lcDoc.todaySolved += 1;
                     }
 
-                    if (lastDay === 0) {
+
+                    subDate.setHours(0, 0, 0, 0);
+                    const subDay = subDate.getTime();
+                    const currentLastDay = (lcDoc as any).lastSolvedDay || 0;
+
+                    if (currentLastDay === 0) {
                         lcDoc.streak = 1;
-                    } else if (subDay === lastDay + ONE_DAY) {
-                        lcDoc.streak += 1;
-                    } else if (subDay > lastDay + ONE_DAY) {
-                        lcDoc.streak = 1;
+                    } else {
+                        const diffDays = Math.round((subDay - currentLastDay) / ONE_DAY);
+                        if (diffDays === 1) {
+                            lcDoc.streak += 1;
+                        } else if (diffDays > 1) {
+                            lcDoc.streak = 1;
+                        }
                     }
-                    
-                    lastDay = subDay;
-                    loggedUpdate = true;
+
+                    (lcDoc as any).lastSolvedDay = subDay;
                 }
             }
 
-            lcDoc.lastSubmissionID = String(submissions[0].submissionID);
-            lcDoc.lastSubmissionTime = new Date(submissions[0].timestamp * 1000);
-            
-            if (loggedUpdate) {
-                console.log(`[LeetCode] Synced NEW data for ${user.leetcode_username}`);
+            if (submissions[0]) {
+                lcDoc.lastSubmissionID = String(submissions[0].submissionID);
+                lcDoc.lastSubmissionTime = new Date(submissions[0].timestamp * 1000);
             }
+            console.log(`[LC] ${user.leetcode_username} | todaySolved=${lcDoc.todaySolved} | streak=${lcDoc.streak}`);
         }
 
-        if (lastDay < yesterdayTime) {
-            lcDoc.streak = 0;
+        const lcLastSolvedDay = (lcDoc as any).lastSolvedDay || 0;
+        if (lcLastSolvedDay > 0) {
+            const diffDays = Math.round((todayTime - lcLastSolvedDay) / ONE_DAY);
+            if (diffDays > 1) {
+                lcDoc.streak = 0;
+            }
         }
 
         lcDoc.lastSyncedAt = new Date();
@@ -200,7 +225,9 @@ export const startPoller = () => {
         cron.schedule("49 59 23 * * *", async () => {
                     console.log(`[${new Date().toISOString()}] Midnight approaches. Generating archive...`);
                     await createDailyArchive();
+                }, {
+                    timezone: "Asia/Kolkata"
                 });
     runSync();
-    cron.schedule("*/2 * * * *", runSync);
+    cron.schedule("* * * * *", runSync);
 };

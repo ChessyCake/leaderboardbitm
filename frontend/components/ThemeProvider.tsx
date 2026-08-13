@@ -32,8 +32,10 @@ export default function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const stored = localStorage.getItem("lb-theme") as Theme | null;
     if (stored === "light" || stored === "dark") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTheme(stored);
     }
+     
     setMounted(true);
   }, []);
 

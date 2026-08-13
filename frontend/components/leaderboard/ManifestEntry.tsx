@@ -14,13 +14,11 @@ interface ManifestEntryProps {
 
 export default function ManifestEntry({ user, rank }: ManifestEntryProps) {
   const isFirst = rank === 1;
-  const tier = user.tier;
-  const role = user.role;
   const displayName =
     user.name?.toUpperCase() ||
     user.codeforcesUsername?.toUpperCase().replace(/\s/g, "_") ||
     "UNKNOWN";
-  const userId = user.id ?? Math.floor(1000 + Math.random() * 9000);
+  const userId = user.id ? String(user.id).slice(-4) : "XXXX";
   const rankStr = String(rank).padStart(2, "0");
   const isActive = user.todaySolved > 0;
 
@@ -98,10 +96,14 @@ export default function ManifestEntry({ user, rank }: ManifestEntryProps) {
         </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-3 gap-x-1 sm:gap-x-8 gap-y-2 sm:gap-y-3 mt-3 sm:mt-5">
+        <div className="flex flex-wrap gap-x-4 sm:gap-x-8 gap-y-2 sm:gap-y-3 mt-3 sm:mt-5">
           <StatField label="SOLVED" value={user.todaySolved} />
-          <StatField label="CF SOLVED" value={user.cfSolvedToday} />
-          <StatField label="LC SOLVED" value={user.lcSolvedToday} />
+          {user.codeforcesUsername && (
+            <StatField label="CF SOLVED" value={user.cfSolvedToday} />
+          )}
+          {user.leetcodeUsername && (
+            <StatField label="LC SOLVED" value={user.lcSolvedToday} />
+          )}
         </div>
       </div>
 
@@ -131,23 +133,27 @@ export default function ManifestEntry({ user, rank }: ManifestEntryProps) {
         {/* Streaks */}
         <div className="mt-2 sm:mt-3 flex flex-col items-center gap-1 sm:gap-1.5">
           {/* CF Streak */}
-          <div
-            className="flex items-center gap-1 sm:gap-1.5 font-mono text-[10px] sm:text-xs font-bold tracking-wider"
-            style={{ color: user.cfStreak > 0 ? "var(--lb-text)" : "var(--lb-text-muted)" }}
-          >
-            <span className="text-[8px] sm:text-[9px] uppercase hidden sm:inline">CF</span>
-            <Flame size={11} className="sm:w-[13px] sm:h-[13px]" style={{ color: user.cfStreak > 0 ? "var(--lb-accent)" : "currentColor" }} />
-            <span>{user.cfStreak}</span>
-          </div>
+          {user.codeforcesUsername && (
+            <div
+              className="flex items-center gap-1 sm:gap-1.5 font-mono text-[10px] sm:text-xs font-bold tracking-wider"
+              style={{ color: user.cfStreak > 0 ? "var(--lb-text)" : "var(--lb-text-muted)" }}
+            >
+              <span className="text-[8px] sm:text-[9px] uppercase hidden sm:inline">CF</span>
+              <Flame size={11} className="sm:w-[13px] sm:h-[13px]" style={{ color: user.cfStreak > 0 ? "var(--lb-accent)" : "currentColor" }} />
+              <span>{user.cfStreak}</span>
+            </div>
+          )}
           {/* LC Streak */}
-          <div
-            className="flex items-center gap-1 sm:gap-1.5 font-mono text-[10px] sm:text-xs font-bold tracking-wider"
-            style={{ color: user.lcStreak > 0 ? "var(--lb-text)" : "var(--lb-text-muted)" }}
-          >
-            <span className="text-[8px] sm:text-[9px] uppercase hidden sm:inline">LC</span>
-            <Flame size={11} className="sm:w-[13px] sm:h-[13px]" style={{ color: user.lcStreak > 0 ? "var(--lb-accent)" : "currentColor" }} />
-            <span>{user.lcStreak}</span>
-          </div>
+          {user.leetcodeUsername && (
+            <div
+              className="flex items-center gap-1 sm:gap-1.5 font-mono text-[10px] sm:text-xs font-bold tracking-wider"
+              style={{ color: user.lcStreak > 0 ? "var(--lb-text)" : "var(--lb-text-muted)" }}
+            >
+              <span className="text-[8px] sm:text-[9px] uppercase hidden sm:inline">LC</span>
+              <Flame size={11} className="sm:w-[13px] sm:h-[13px]" style={{ color: user.lcStreak > 0 ? "var(--lb-accent)" : "currentColor" }} />
+              <span>{user.lcStreak}</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

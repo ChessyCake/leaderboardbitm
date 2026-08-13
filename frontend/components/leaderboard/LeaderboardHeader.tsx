@@ -19,7 +19,7 @@ export default function LeaderboardHeader() {
             className="block skew-x-3 font-display text-2xl sm:text-4xl md:text-5xl font-black tracking-tight"
             style={{ color: "var(--lb-accent-text)" }}
           >
-            // RANKINGS
+            {"// RANKINGS"}
           </span>
         </div>
       </div>

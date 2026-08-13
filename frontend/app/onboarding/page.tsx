@@ -12,6 +12,7 @@ export default function Onboarding() {
 
   const [leetcode, setLeetcode] = useState("");
   const [codeforces, setCodeforces] = useState("");
+  const [platform, setPlatform] = useState<"both" | "leetcode" | "codeforces">("both");
 
   const [loading, setLoading] = useState(false);
 
@@ -20,14 +21,17 @@ export default function Onboarding() {
     setLoading(true);
 
     try {
+      const payloadLeetcode = (platform === "both" || platform === "leetcode") ? leetcode : "";
+      const payloadCodeforces = (platform === "both" || platform === "codeforces") ? codeforces : "";
+
       const res = await api("/api/v1/onboarding", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          leetcode,
-          codeforces,
+          leetcode: payloadLeetcode,
+          codeforces: payloadCodeforces,
         }),
       });
 
@@ -98,43 +102,69 @@ export default function Onboarding() {
             <div className="flex-1 p-6 md:p-8 flex flex-col gap-8 justify-between">
               
               <div className="flex flex-col gap-8">
-                {/* LeetCode Input */}
+                {/* Platform Selection */}
                 <div className="space-y-3">
                   <label className="font-mono text-xs font-bold text-foreground uppercase tracking-wider">
-                    LEETCODE USERNAME
+                    SELECT PLATFORMS YOU USE
                   </label>
-                  <div className="border-2 border-foreground h-12 flex items-center group focus-within:ring-2 focus-within:ring-[#ccff00] transition-all bg-background">
-                    <div className="h-full aspect-square bg-foreground text-background flex items-center justify-center border-r-2 border-foreground">
-                      <GiLaurelsTrophy className="w-5 h-5" />
-                    </div>
-                    <input
-                      value={leetcode}
-                      onChange={(e) => setLeetcode(e.target.value)}
-                      placeholder="Enter handle..."
-                      className="flex-1 h-full px-4 bg-transparent outline-none text-foreground placeholder:text-foreground/40 font-mono text-sm"
-                      required
-                    />
+                  <div className="flex flex-wrap gap-4">
+                    {(["both", "leetcode", "codeforces"] as const).map((opt) => (
+                      <label key={opt} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="platform"
+                          value={opt}
+                          checked={platform === opt}
+                          onChange={(e) => setPlatform(e.target.value as "both" | "leetcode" | "codeforces")}
+                          className="w-4 h-4 accent-[#ccff00]"
+                        />
+                        <span className="font-mono text-sm uppercase text-foreground">{opt}</span>
+                      </label>
+                    ))}
                   </div>
                 </div>
 
-                {/* Codeforces Input */}
-                <div className="space-y-3">
-                  <label className="font-mono text-xs font-bold text-foreground uppercase tracking-wider">
-                    CODEFORCES USERNAME
-                  </label>
-                  <div className="border-2 border-foreground h-12 flex items-center group focus-within:ring-2 focus-within:ring-[#ccff00] transition-all bg-background">
-                    <div className="h-full aspect-square bg-foreground text-background flex items-center justify-center border-r-2 border-foreground">
-                      <FaCode className="w-5 h-5" />
+                {/* LeetCode Input */}
+                {(platform === "both" || platform === "leetcode") && (
+                  <div className="space-y-3">
+                    <label className="font-mono text-xs font-bold text-foreground uppercase tracking-wider">
+                      LEETCODE USERNAME
+                    </label>
+                    <div className="border-2 border-foreground h-12 flex items-center group focus-within:ring-2 focus-within:ring-[#ccff00] transition-all bg-background">
+                      <div className="h-full aspect-square bg-foreground text-background flex items-center justify-center border-r-2 border-foreground">
+                        <GiLaurelsTrophy className="w-5 h-5" />
+                      </div>
+                      <input
+                        value={leetcode}
+                        onChange={(e) => setLeetcode(e.target.value)}
+                        placeholder="Enter handle..."
+                        className="flex-1 h-full px-4 bg-transparent outline-none text-foreground placeholder:text-foreground/40 font-mono text-sm"
+                        required
+                      />
                     </div>
-                    <input
-                      value={codeforces}
-                      onChange={(e) => setCodeforces(e.target.value)}
-                      placeholder="Enter handle..."
-                      className="flex-1 h-full px-4 bg-transparent outline-none text-foreground placeholder:text-foreground/40 font-mono text-sm"
-                      required
-                    />
                   </div>
-                </div>
+                )}
+
+                {/* Codeforces Input */}
+                {(platform === "both" || platform === "codeforces") && (
+                  <div className="space-y-3">
+                    <label className="font-mono text-xs font-bold text-foreground uppercase tracking-wider">
+                      CODEFORCES USERNAME
+                    </label>
+                    <div className="border-2 border-foreground h-12 flex items-center group focus-within:ring-2 focus-within:ring-[#ccff00] transition-all bg-background">
+                      <div className="h-full aspect-square bg-foreground text-background flex items-center justify-center border-r-2 border-foreground">
+                        <FaCode className="w-5 h-5" />
+                      </div>
+                      <input
+                        value={codeforces}
+                        onChange={(e) => setCodeforces(e.target.value)}
+                        placeholder="Enter handle..."
+                        className="flex-1 h-full px-4 bg-transparent outline-none text-foreground placeholder:text-foreground/40 font-mono text-sm"
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Submit Button */}
