@@ -183,38 +183,59 @@ export default function Sidebar() {
             SIGN_OUT
           </button>
         </div>
+      </div>
 
-        {/* ── Navigation ── */}
-        <nav className="flex-1 px-3 mt-3">
-          <ul className="space-y-1">
-            {NAV_ITEMS.map(({ label, icon: Icon, href }) => {
-              const isActive = pathname === href;
-              return (
-                <li key={label}>
-                  <Link
-                    href={href}
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 rounded-sm px-3 py-2.5 font-mono text-xs tracking-wider transition-colors"
-                    style={{
-                      background: isActive ? "var(--lb-nav-active-bg)" : "transparent",
-                      color: isActive ? "var(--lb-text)" : "var(--lb-text-muted)",
-                      borderLeft: isActive ? "2px solid var(--lb-accent)" : "2px solid transparent",
-                    }}
-                    title={label}
-                  >
-                    <Icon size={16} className="shrink-0" />
-                    <span className="truncate">{label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+      {/* ── Navigation ── */}
+      <nav className="flex-1 px-2 md:px-3 mt-2">
+        <ul className="space-y-1">
+          {NAV_ITEMS.map(({ label, icon: Icon, href }) => {
+            const isActive = pathname === href;
+            return (
+              <li key={label}>
+                <Link
+                  href={href}
+                  className="flex items-center justify-center md:justify-start gap-3 rounded-sm px-0 md:px-3 py-2.5 font-mono text-xs tracking-wider transition-colors"
+                  style={{
+                    background: isActive
+                      ? "var(--lb-nav-active-bg)"
+                      : "transparent",
+                    color: isActive
+                      ? "var(--lb-text)"
+                      : "var(--lb-text-muted)",
+                    borderLeft: isActive
+                      ? "2px solid var(--lb-accent)"
+                      : "2px solid transparent",
+                  }}
+                  title={label}
+                >
+                  <Icon size={16} className="shrink-0" />
+                  <span className="hidden md:inline truncate">{label}</span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
 
-        {/* ── Platform Usernames ── */}
-        <div
-          className="px-4 py-3 mx-3 mb-2 rounded-sm border"
-          style={{ borderColor: "var(--lb-border)", background: "var(--lb-surface)" }}
+      {/* ── Join Links ── */}
+      <div className="px-2 md:px-3 mb-2 flex flex-col gap-1">
+        <a
+        
+          href="https://discord.gg/jTTckmfwfR"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center md:justify-start gap-3 rounded-sm px-0 md:px-3 py-2 font-mono text-xs tracking-wider transition-colors text-[var(--lb-text-muted)] hover:text-[#5865F2] hover:bg-[var(--lb-nav-active-bg)]"
+          title="Join Discord"
+        >
+          <FaDiscord size={16} className="shrink-0" />
+          <span className="hidden md:inline truncate">DISCORD</span>
+        </a>
+        <a
+          href="https://chat.whatsapp.com/IK8RxFETYjDAKbtoNS3uXy"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center md:justify-start gap-3 rounded-sm px-0 md:px-3 py-2 font-mono text-xs tracking-wider transition-colors text-[var(--lb-text-muted)] hover:text-[#25D366] hover:bg-[var(--lb-nav-active-bg)]"
+          title="Join WhatsApp"
         >
           <div className="flex items-center justify-between mb-2">
             <span className="font-mono text-[9px] tracking-widest uppercase" style={{ color: "var(--lb-text-muted)" }}>
