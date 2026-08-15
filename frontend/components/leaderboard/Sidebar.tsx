@@ -59,9 +59,7 @@ export default function Sidebar() {
       .catch(() => {});
   }, []);
 
-  const avatarUrl = profile
-    ? `https://api.dicebear.com/10.x/notionists-neutral/svg`
-    : null;
+
 
   const handleSave = async () => {
     setSaving(true);
@@ -145,17 +143,18 @@ export default function Sidebar() {
 
         {/* ── Operator Identity ── */}
         <div className="px-5 pt-6 pb-4 flex flex-col items-start border-b" style={{ borderColor: "var(--lb-border)" }}>
-          {/* Avatar */}
+          {/* Brand Logo (replacing Avatar) */}
           <div
-            className="flex h-12 w-12 items-center justify-center rounded-sm border overflow-hidden shrink-0"
-            style={{ borderColor: "var(--lb-border-accent)", background: "var(--lb-surface)" }}
+            className="font-display text-3xl font-black tracking-tight leading-none flex items-center mb-2"
+            style={{ color: "var(--lb-text)" }}
           >
-            {avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={avatarUrl} alt="avatar" className="w-10 h-10 object-contain" />
-            ) : (
-              <div className="w-10 h-10 rounded-sm animate-pulse" style={{ background: "var(--lb-surface)" }} />
-            )}
+            <span>code_</span>
+            <span
+              className="ml-1 px-1 rounded-sm"
+              style={{ background: "var(--lb-accent)", color: "var(--lb-accent-text)" }}
+            >
+              Stack
+            </span>
           </div>
 
           <div className="mt-3 w-full">

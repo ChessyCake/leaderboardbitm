@@ -74,7 +74,7 @@ export default function FAQPage() {
             className="mt-4 font-mono text-sm sm:text-base tracking-wider max-w-xl"
             style={{ color: "var(--lb-text-muted)" }}
           >
-            Frequently asked questions about the Comp_League platform, leaderboard mechanics, and data privacy. Click on a question to reveal its answer.
+            Frequently asked questions about the CodeStack platform, leaderboard mechanics, and data privacy. Click on a question to reveal its answer.
           </p>
         </header>
 

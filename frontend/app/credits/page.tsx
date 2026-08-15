@@ -1,7 +1,7 @@
 "use client";
 
-import { User, Mail } from "lucide-react";
-import { FaGithub, FaLinkedin } from "react-icons/fa";
+import { User } from "lucide-react";
+import { FaGithub, FaLinkedin, FaInstagram } from "react-icons/fa";
 import LeaderboardFooter from "@/components/leaderboard/LeaderboardFooter";
 
 const DEVELOPERS = [
@@ -10,27 +10,27 @@ const DEVELOPERS = [
     name: "Harsh Raj Minj",
     role: "Tech Lead • Architecture • UI/UX & Backend",
     description: "Masterminding the complete system architecture, spearheading major UI designs, and engineering the core backend infrastructure.",
-    github: "#",
-    linkedin: "#",
-    email: "#",
+    github: "https://github.com/chessyCake",
+    linkedin: "https://www.linkedin.com/in/harsh-raj-minj-630351380",
+    instagram: "https://www.instagram.com/harshraj.hrm?igsh=MXJ1bGViNmY2ZTVhNA%3D%3D",
   },
   {
     sysCode: "DEV.02",
     name: "Prahlad Kumar",
     role: "Backend",
     description: "Building robust backend services, ensuring performance, and managing system integrations.",
-    github: "#",
-    linkedin: "#",
-    email: "#",
+    github: "https://github.com/kumarprahlad0037-Pixel",
+    linkedin: "https://www.linkedin.com/in/prahlad-kumar-235b3837a/",
+    instagram: "https://www.instagram.com/_kumarprahlad_/",
   },
   {
     sysCode: "DEV.03",
     name: "Rahul Gurjar",
     role: "UI/UX and Frontend",
     description: "Crafting the visual identity, user experience, and developing the frontend applications.",
-    github: "#",
-    linkedin: "#",
-    email: "#",
+    github: "https://github.com/Rahul3307",
+    linkedin: "https://www.linkedin.com/in/rahul-gurjar-40943b377/",
+    instagram: "https://www.instagram.com/rahul_gurjar.3/",
   }
 ];
 
@@ -180,7 +180,9 @@ export default function CreditsPage() {
                     <FaLinkedin size={20} />
                   </a>
                   <a
-                    href={dev.email}
+                    href={dev.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="p-2 border transition-colors"
                     style={{ 
                       borderColor: "var(--lb-border)",
@@ -195,7 +197,7 @@ export default function CreditsPage() {
                       e.currentTarget.style.color = "var(--lb-text-muted)";
                     }}
                   >
-                    <Mail size={20} />
+                    <FaInstagram size={20} />
                   </a>
                 </div>
               </div>

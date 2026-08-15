@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "COMP_LEAGUE // Rankings",
+  title: "CodeStack // Rankings",
   description:
     "Competitive programming leaderboard — track streaks, ratings, and daily progress for Codeforces and LeetCode.",
   keywords: [
@@ -25,17 +25,17 @@ export const metadata: Metadata = {
     "coding streak",
     "algorithm rankings",
   ],
-  authors: [{ name: "COMP_LEAGUE" }],
+  authors: [{ name: "CodeStack" }],
   openGraph: {
-    title: "COMP_LEAGUE // Rankings",
+    title: "CodeStack // Rankings",
     description: "Competitive programming leaderboard — track streaks, ratings, and daily progress.",
     type: "website",
     locale: "en_US",
-    siteName: "COMP_LEAGUE",
+    siteName: "CodeStack",
   },
   twitter: {
     card: "summary_large_image",
-    title: "COMP_LEAGUE // Rankings",
+    title: "CodeStack // Rankings",
     description: "Competitive programming leaderboard — track streaks, ratings, and daily progress.",
   },
 };

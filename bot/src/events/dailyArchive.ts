@@ -86,7 +86,7 @@ export const postDailyArchive = async (
       .setDescription(description.trimEnd())
       .setImage(GLITCH_GIF)
       .setFooter({
-        text: "COMP_LEAGUE • DAILY SNAPSHOT",
+        text: "CodeStack • DAILY SNAPSHOT",
         iconURL: "https://cdn.discordapp.com/emojis/1145727546653970432.gif",
       });
 

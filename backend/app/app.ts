@@ -18,7 +18,7 @@ const app = express();
 const allowedOrigins = [
   process.env.BOT_URL,
   process.env.FRONTEND_URL,
-];
+].filter((origin): origin is string => Boolean(origin));
 
 app.use(cors({
   origin: (origin, callback) => {

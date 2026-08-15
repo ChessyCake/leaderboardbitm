@@ -1,6 +1,7 @@
 import { TextChannel, Message, EmbedBuilder } from "discord.js";
 import { api } from "../services/api";
 import { EMOJI } from "../config/emojis";
+import { buildLeaderboardEmbedDescription } from "../services/leaderboardFormatter";
 
 const LEADERBOARD_MESSAGE_ID = process.env.LEADERBOARD_MESSAGE_ID!;
 
@@ -16,39 +17,30 @@ export const postLiveLeaderboard = async (channel: TextChannel) => {
     return;
   }
 
-  const leaderboard = data.leaderboard.slice(0, 3);
-  const stats = data.stats;
+  const leaderboard = Array.isArray(data.leaderboard) ? data.leaderboard.slice(0, 3) : [];
+  const stats = data.stats ?? {
+    activeToday: 0,
+    solvedToday: 0,
+    cfSolvedToday: 0,
+    lcSolvedToday: 0,
+  };
 
-
-  let description = `**${EMOJI.bullet} LIVE LEADERBOARD**\n> Top 3 operators updated in real-time.\n\n`;
-
-  if (leaderboard.length === 0) {
-    description += `**${EMOJI.sparkle} STANDINGS**\n> No operators have solved today yet.\n\n`;
-  } else {
-    description += `**${EMOJI.crown} TOP OPERATORS**\n`;
-    leaderboard.forEach((u: any, i: number) => {
-      const medal = i === 0 ? EMOJI.crown : i === 1 ? EMOJI.silver : EMOJI.bronze;
-      const cfTag = u.cfSolvedToday > 0 ? `${EMOJI.cf} CF: \`${u.cfSolvedToday}\`` : "";
-      const lcTag = u.lcSolvedToday > 0 ? `${EMOJI.lc} LC: \`${u.lcSolvedToday}\`` : "";
-      const platforms = [cfTag, lcTag].filter(Boolean).join(" | ") || "─";
-      const streakDisplay = u.streak > 0 ? ` | ${EMOJI.fire} \`${u.streak}\`` : "";
-
-      description += `> ${medal} **${u.name}**: **${u.todaySolved}** Solved\n> └ ${platforms}${streakDisplay}\n`;
-    });
-    description += `\n`;
-  }
-
-  description += `**${EMOJI.stats} TODAY'S STATS**\n`;
-  description += `> Active Operators: **${stats.activeToday}**\n`;
-  description += `> Total Solved: **${stats.solvedToday}**\n`;
-  description += `> ${EMOJI.cf} CF: **${stats.cfSolvedToday}** | ${EMOJI.lc} LC: **${stats.lcSolvedToday}**\n`;
+  const { description, thumbnailUrl } = buildLeaderboardEmbedDescription({
+    title: `**${EMOJI.bullet} LIVE LEADERBOARD**`,
+    subtitle: "> Top 3 operators updated in real-time.",
+    emptyMessage: `> No operators have solved today yet.`,
+    users: leaderboard,
+    stats,
+    requestedBy: null,
+  });
 
   const embed = new EmbedBuilder()
     .setColor(THEME_RED)
     .setDescription(description.trimEnd())
     .setImage(GLITCH_GIF)
+    .setThumbnail(thumbnailUrl ?? null)
     .setFooter({
-      text: "COMP_LEAGUE • LIVE LEADERBOARD",
+      text: "CodeStack • LIVE LEADERBOARD",
       iconURL: "https://cdn.discordapp.com/emojis/1145727546653970432.gif",
     });
 

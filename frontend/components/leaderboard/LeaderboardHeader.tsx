@@ -6,7 +6,7 @@ export default function LeaderboardHeader() {
         className="font-display text-4xl sm:text-6xl md:text-7xl font-black tracking-tight leading-none"
         style={{ color: "var(--lb-text)" }}
       >
-        COMP_LEAGUE
+        SYS.RANK
       </h1>
 
       {/* Green accent bar */}
