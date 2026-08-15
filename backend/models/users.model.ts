@@ -37,6 +37,16 @@ const userSchema = new mongoose.Schema(
             default: ""
         }
 
+        CfVerifyQ: {
+            type: Number,
+            required: true
+        },
+
+        verified: {
+            type: Boolean,
+            default: false
+        }
+
     },
     {
         timestamps: true,
