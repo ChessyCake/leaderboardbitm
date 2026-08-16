@@ -1,6 +1,7 @@
 import { TextChannel, EmbedBuilder, AttachmentBuilder } from "discord.js";
 import { api } from "../services/api";
 import { EMOJI } from "../config/emojis";
+import { buildLeaderboardEmbedDescription } from "../services/leaderboardFormatter";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -44,47 +45,37 @@ export const postDailyArchive = async (
       day: "numeric",
     });
 
-    // ── Progress bar helper ──
-    const bar = (val: number, max: number) => {
-      const filled = Math.min(10, Math.max(0, Math.round((val / Math.max(max, 1)) * 10)));
-      return "▰".repeat(filled) + "▱".repeat(10 - filled);
-    };
-
     const totalSolved = archive.total_solved ?? 0;
     const cfSolved = archive.total_CFsolved ?? 0;
     const lcSolved = archive.total_LCsolved ?? 0;
 
-    let description = `**${EMOJI.bullet} ARCHIVE SNAPSHOT ── ${archiveDate}**\n> Total online: **${archive.total_online ?? 0}**\n\n`;
+    const users = topUsers.map((u: any) => ({
+      name: u.name,
+      todaySolved: u.totalSolvedToday ?? u.todaySolved ?? 0,
+      cfSolvedToday: u.cfSolved ?? u.cfSolvedToday ?? 0,
+      lcSolvedToday: u.lcSolved ?? u.lcSolvedToday ?? 0,
+    }));
 
-    if (topUsers.length === 0) {
-      description += `**${EMOJI.sparkle} STANDINGS**\n> No operators were active today.\n\n`;
-    } else {
-      description += `**${EMOJI.crown} TOP OPERATORS**\n`;
-      topUsers.forEach((u: any, i: number) => {
-        const medal = i === 0 ? EMOJI.crown : i === 1 ? EMOJI.silver : i === 2 ? EMOJI.bronze : `\`${String(i + 1).padStart(2, "0")}\``;
-        const solved = u.totalSolvedToday ?? u.todaySolved ?? 0;
-        const nameUpper = (u.name || "UNKNOWN").toUpperCase();
+    const stats = {
+      activeToday: archive.total_online ?? 0,
+      solvedToday: totalSolved,
+      cfSolvedToday: cfSolved,
+      lcSolvedToday: lcSolved,
+    };
 
-        const cfVal = u.cfSolvedToday ?? 0;
-        const lcVal = u.lcSolvedToday ?? 0;
-        const cfTag = cfVal > 0 ? `${EMOJI.cf} CF: \`${cfVal}\`` : "";
-        const lcTag = lcVal > 0 ? `${EMOJI.lc} LC: \`${lcVal}\`` : "";
-        const platforms = [cfTag, lcTag].filter(Boolean).join(" | ");
-        const platformStr = platforms ? ` ─ ${platforms}` : "";
-
-        description += `> ${medal} **${nameUpper}**: **${solved}** Solved\n> └ ${platformStr}\n`;
-      });
-      description += `\n`;
-    }
-
-    description += `**${EMOJI.stats} DAY SUMMARY**\n`;
-    description += `> Total Solved: **${totalSolved}**\n`;
-    description += `> ${EMOJI.cf} Codeforces: **${cfSolved}**  |  ${EMOJI.lc} LeetCode: **${lcSolved}**\n`;
+    const { description, thumbnailUrl } = buildLeaderboardEmbedDescription({
+      title: `**${EMOJI.bullet} ARCHIVE SNAPSHOT ── ${archiveDate}**`,
+      subtitle: `> Total online: **${stats.activeToday}**`,
+      emptyMessage: `> No operators were active today.`,
+      users,
+      stats,
+    });
 
     const embed = new EmbedBuilder()
       .setColor(THEME_RED)
       .setDescription(description.trimEnd())
       .setImage(GLITCH_GIF)
+      .setThumbnail(thumbnailUrl ?? null)
       .setFooter({
         text: "CodeStack • DAILY SNAPSHOT",
         iconURL: "https://cdn.discordapp.com/emojis/1145727546653970432.gif",

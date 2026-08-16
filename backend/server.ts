@@ -8,6 +8,23 @@ import { startPoller } from "./services/poller";
 
 const PORT = process.env.PORT || 4000
 
+const requiredEnvVars = [
+    "MONGO_URI",
+    "JWT_SECRET",
+    "BOT_SECRET",
+    "AUTH_GOOGLE_ID",
+    "AUTH_GOOGLE_SECRET",
+    "BACKEND_URL",
+    "FRONTEND_URL"
+];
+
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+
+if (missingEnvVars.length > 0) {
+    console.error(`FATAL ERROR: Missing required environment variables: ${missingEnvVars.join(", ")}`);
+    process.exit(1);
+}
+
 const serverStart = async () => {
     try {
         await connectDB()

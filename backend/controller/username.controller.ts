@@ -6,8 +6,8 @@ export const updateUsernames = async (req: Request, res: Response) => {
     try {
         const { codeforces, leetcode } = req.body;
 
-        const trimmedCF = (codeforces || "").trim();
-        const trimmedLC = (leetcode || "").trim();
+        const trimmedCF = typeof codeforces === "string" ? codeforces.trim() : "";
+        const trimmedLC = typeof leetcode === "string" ? leetcode.trim() : "";
 
         if (!trimmedCF && !trimmedLC) {
             return res.status(400).json({

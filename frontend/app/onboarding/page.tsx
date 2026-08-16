@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 import { GiLaurelsTrophy } from "react-icons/gi";
 import { FaCode, FaCheck, FaCopy } from "react-icons/fa6";
@@ -49,7 +50,7 @@ export default function Onboarding() {
       setStep(2);
     } catch (err: unknown) {
       console.error(err);
-      alert(err instanceof Error ? err.message : "Something went wrong.");
+      toast.error(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -74,7 +75,7 @@ export default function Onboarding() {
       router.replace("/leaderboard");
     } catch (err: unknown) {
       console.error(err);
-      alert((err instanceof Error ? err.message : "") || "Verification failed. Please ensure you completed the steps and try again.");
+      toast.error((err instanceof Error ? err.message : "") || "Verification failed. Please ensure you completed the steps and try again.");
     } finally {
       setLoading(false);
     }
@@ -253,8 +254,8 @@ export default function Onboarding() {
                       </h3>
                       <p className="text-xs font-mono text-foreground/80 leading-relaxed">
                         Submit any code that results in a <strong>COMPILATION_ERROR</strong> to{" "}
-                        <a href="https://codeforces.com/problemset/problem/4/A" target="_blank" rel="noopener noreferrer" className="text-[#ccff00] underline hover:opacity-80">
-                          this problem
+                        <a href="https://codeforces.com/problemset" target="_blank" rel="noopener noreferrer" className="text-[#ccff00] underline hover:opacity-80">
+                          any problem
                         </a>. 
                         We will check your recent submissions.
                       </p>
