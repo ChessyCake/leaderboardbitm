@@ -532,7 +532,7 @@ function ArchiveHeader() {
         className="font-display text-4xl sm:text-6xl md:text-7xl font-black tracking-tight leading-none"
         style={{ color: "var(--lb-text)" }}
       >
-        CodeStack
+        Codango
       </h1>
 
       <div className="mt-2 inline-block">

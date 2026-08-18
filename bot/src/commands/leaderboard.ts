@@ -42,7 +42,7 @@ export const execute = async (interaction: any) => {
       .setImage(GLITCH_GIF)
       .setThumbnail(thumbnailUrl ?? null)
       .setFooter({
-        text: "CodeStack • REALTIME LEADERBOARD",
+        text: "Codango • REALTIME LEADERBOARD",
         iconURL: "https://cdn.discordapp.com/emojis/1145727546653970432.gif",
       });
 

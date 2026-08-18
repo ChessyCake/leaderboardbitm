@@ -30,20 +30,15 @@ export default function ThemeProvider({ children }: { children: ReactNode }) {
 
   /* Restore persisted preference on mount */
   useEffect(() => {
-    const stored = localStorage.getItem("lb-theme") as Theme | null;
-    if (stored === "light" || stored === "dark") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setTheme(stored);
-    }
-     
+    setTheme("dark");
     setMounted(true);
   }, []);
 
   /* Apply data-theme attribute whenever theme changes */
   useEffect(() => {
     if (!mounted) return;
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("lb-theme", theme);
+    document.documentElement.setAttribute("data-theme", "dark");
+    localStorage.setItem("lb-theme", "dark");
   }, [theme, mounted]);
 
   const toggleTheme = () => {

@@ -21,6 +21,9 @@ export default function Onboarding() {
   const [verificationToken, setVerificationToken] = useState("");
   const [copied, setCopied] = useState(false);
 
+  const problemIds = ["4A", "71A", "158A", "231A", "282A", "50A", "118A", "339A", "281A", "266A"];
+  const [randomProblem] = useState(() => problemIds[Math.floor(Math.random() * problemIds.length)]);
+
   const submitStep1 = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -249,13 +252,13 @@ export default function Onboarding() {
                 <div className="space-y-4 mt-2">
                   {(platform === "both" || platform === "codeforces") && (
                     <div className="p-4 border-2 border-foreground/30 bg-foreground/5 space-y-2">
-                      <h3 className="font-mono font-bold text-sm flex items-center gap-2">
+                      <h3 className="font-mono font-bold text-sm flex items-center gap-2 text-foreground">
                         <FaCode className="text-white" /> Codeforces Verification
                       </h3>
                       <p className="text-xs font-mono text-foreground/80 leading-relaxed">
                         Submit any code that results in a <strong>COMPILATION_ERROR</strong> to{" "}
-                        <a href="https://codeforces.com/problemset" target="_blank" rel="noopener noreferrer" className="text-[#ccff00] underline hover:opacity-80">
-                          any problem
+                        <a href={`https://codeforces.com/problemset/problem/${randomProblem.slice(0, -1)}/${randomProblem.slice(-1)}`} target="_blank" rel="noopener noreferrer" className="text-[#ccff00] underline hover:opacity-80">
+                          problem {randomProblem}
                         </a>. 
                         We will check your recent submissions.
                       </p>
@@ -264,7 +267,7 @@ export default function Onboarding() {
 
                   {(platform === "both" || platform === "leetcode") && (
                     <div className="p-4 border-2 border-foreground/30 bg-foreground/5 space-y-2">
-                      <h3 className="font-mono font-bold text-sm flex items-center gap-2">
+                      <h3 className="font-mono font-bold text-sm flex items-center gap-2 text-foreground">
                         <GiLaurelsTrophy className="text-white" /> LeetCode Verification
                       </h3>
                       <p className="text-xs font-mono text-foreground/80 leading-relaxed">

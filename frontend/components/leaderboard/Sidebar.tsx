@@ -19,7 +19,6 @@ import {
 
 
 import { SiCodeforces, SiLeetcode } from "react-icons/si";
-import ThemeToggle from "@/components/ThemeToggle";
 import { api } from "@/lib/api";
 import { FaDiscord } from "react-icons/fa6";
 
@@ -41,7 +40,19 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [showTrackerModal, setShowTrackerModal] = useState(false);
 
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(() => {
+    if (typeof window !== "undefined") {
+      const cached = sessionStorage.getItem("lb_profile");
+      if (cached) {
+        try {
+          return JSON.parse(cached);
+        } catch (e) {
+          return null;
+        }
+      }
+    }
+    return null;
+  });
   const [editing, setEditing] = useState(false);
   const [cfInput, setCfInput] = useState("");
   const [lcInput, setLcInput] = useState("");
@@ -54,6 +65,7 @@ export default function Sidebar() {
       .then((r) => r.json())
       .then((data) => {
         setProfile(data);
+        sessionStorage.setItem("lb_profile", JSON.stringify(data));
         setCfInput(data.codeforces_username || "");
         setLcInput(data.leetcode_username || "");
       })
@@ -75,11 +87,13 @@ export default function Sidebar() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to update");
-      setProfile((p) =>
-        p
+      setProfile((p) => {
+        const newProfile = p
           ? { ...p, codeforces_username: cfInput.trim(), leetcode_username: lcInput.trim() }
-          : p
-      );
+          : p;
+        if (newProfile) sessionStorage.setItem("lb_profile", JSON.stringify(newProfile));
+        return newProfile;
+      });
       setEditing(false);
     } catch (e: unknown) {
       if (e instanceof Error) {
@@ -94,6 +108,7 @@ export default function Sidebar() {
 
   const handleSignOut = () => {
     localStorage.removeItem("token");
+    sessionStorage.removeItem("lb_profile");
     router.replace("/login");
   };
 
@@ -147,7 +162,7 @@ export default function Sidebar() {
           <div className="flex items-center gap-3 mb-4">
             <Image 
               src="/codestack_logo.png" 
-              alt="CodeStack Logo Icon" 
+              alt="Codango Logo Icon" 
               width={36}
               height={36}
               className="object-contain shrink-0"
@@ -158,7 +173,7 @@ export default function Sidebar() {
               className="font-display text-2xl font-black tracking-tight leading-none pt-1"
               style={{ color: "var(--lb-text)" }}
             >
-              Code<span style={{ color: "var(--lb-accent)" }}>Stack</span>
+              Cod<span style={{ color: "var(--lb-accent)" }}>ango</span>
             </span>
           </div>
 
@@ -329,9 +344,8 @@ export default function Sidebar() {
           )}
         </div>
 
-        {/* ── Theme Toggle ── */}
+        {/* ── Theme Toggle Removed ── */}
         <div className="px-4 mb-4 flex justify-start">
-          <ThemeToggle />
         </div>
       </aside>
 
@@ -360,13 +374,16 @@ export default function Sidebar() {
             <p className="font-mono text-sm leading-relaxed mt-2" style={{ color: "var(--lb-text-muted)" }}>
               The Contest Tracker helps you track upcoming competitive programming contests across platforms right from your phone. Set reminders, view leaderboards, and never miss a rated match.
             </p>
-            <button
+            <a
+              href="https://expo.dev/accounts/ha-rsh/projects/frontend/builds/1faa6b31-c251-49af-9ede-8c2f2a065420"
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={() => setShowTrackerModal(false)}
-              className="mt-4 px-4 py-2 font-mono text-sm font-bold tracking-widest hover:opacity-90 transition-opacity"
+              className="mt-4 px-4 py-2 font-mono text-sm font-bold tracking-widest text-center hover:opacity-90 transition-opacity block"
               style={{ background: "var(--lb-accent)", color: "var(--lb-accent-text)" }}
             >
-              ACKNOWLEDGE
-            </button>
+              DOWNLOAD NOW
+            </a>
           </div>
         </div>
       )}

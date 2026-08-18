@@ -40,7 +40,7 @@ export const postLiveLeaderboard = async (channel: TextChannel) => {
     .setImage(GLITCH_GIF)
     .setThumbnail(thumbnailUrl ?? null)
     .setFooter({
-      text: "CodeStack • LIVE LEADERBOARD",
+      text: "Codango • LIVE LEADERBOARD",
       iconURL: "https://cdn.discordapp.com/emojis/1145727546653970432.gif",
     });
 

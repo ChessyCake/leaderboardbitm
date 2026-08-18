@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { FiArrowRight, FiClock, FiMessageSquare, FiActivity } from "react-icons/fi";
 
@@ -35,9 +36,20 @@ export default function WelcomePage() {
               </p>
 
               <div className="space-y-2">
-                <h1 className="text-4xl sm:text-5xl font-black leading-tight text-foreground uppercase tracking-tighter">
-                  Welcome to the <br />
-                  <span className="text-[#ccff00] drop-shadow-[2px_2px_0px_#000]">CodeStack</span>
+                <h1 className="text-4xl sm:text-5xl font-black leading-tight text-foreground uppercase tracking-tighter flex flex-col gap-4">
+                  <span>Welcome to the</span>
+                  <div className="flex items-center gap-4 mt-2">
+                    <Image 
+                      src="/codestack_logo.png" 
+                      alt="Codango Logo Icon" 
+                      width={48}
+                      height={48}
+                      className="object-contain shrink-0 drop-shadow-[2px_2px_0px_#000]"
+                      priority
+                    />
+                    <div className="h-12 w-[3px] bg-foreground opacity-50" />
+                    <span className="text-[#ccff00] drop-shadow-[2px_2px_0px_#000]">Codango</span>
+                  </div>
                 </h1>
                 <p className="text-sm sm:text-base text-foreground/80 font-medium max-w-[90%]">
                   Before you initialize your profile, here&apos;s what you need to know about the system.

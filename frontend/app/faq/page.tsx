@@ -88,7 +88,7 @@ export default function FAQPage() {
             className="mt-6 font-mono text-sm sm:text-base tracking-wider max-w-2xl leading-relaxed"
             style={{ color: "var(--lb-text-muted)" }}
           >
-            Frequently asked questions about the CodeStack platform, leaderboard mechanics, and data privacy. Click on a question to reveal its decrypted response.
+            Frequently asked questions about the Codango platform, leaderboard mechanics, and data privacy. Click on a question to reveal its decrypted response.
           </p>
         </header>
 

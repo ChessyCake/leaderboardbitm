@@ -77,7 +77,7 @@ export const postDailyArchive = async (
       .setImage(GLITCH_GIF)
       .setThumbnail(thumbnailUrl ?? null)
       .setFooter({
-        text: "CodeStack • DAILY SNAPSHOT",
+        text: "Codango • DAILY SNAPSHOT",
         iconURL: "https://cdn.discordapp.com/emojis/1145727546653970432.gif",
       });
 
