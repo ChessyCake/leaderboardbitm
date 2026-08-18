@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Trophy,
@@ -13,6 +14,7 @@ import {
   Check,
   MessageCircleQuestion,
   Users,
+  Download,
 } from "lucide-react";
 
 
@@ -24,8 +26,6 @@ import { FaDiscord } from "react-icons/fa6";
 const NAV_ITEMS = [
   { label: "RANKINGS", icon: Trophy, href: "/leaderboard" },
   { label: "ARCHIVE", icon: Archive, href: "/archive" },
-  { label: "FAQ", icon: MessageCircleQuestion, href: "/faq" },
-  { label: "CREDITS", icon: Users, href: "/credits" },
 ];
 
 interface UserProfile {
@@ -39,6 +39,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [showTrackerModal, setShowTrackerModal] = useState(false);
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [editing, setEditing] = useState(false);
@@ -56,7 +57,7 @@ export default function Sidebar() {
         setCfInput(data.codeforces_username || "");
         setLcInput(data.leetcode_username || "");
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
 
@@ -80,13 +81,13 @@ export default function Sidebar() {
           : p
       );
       setEditing(false);
-    }  catch (e: unknown) {
-  if (e instanceof Error) {
-    setSaveError(e.message);
-  } else {
-    setSaveError("Error saving");
-  }
-} finally {
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setSaveError(e.message);
+      } else {
+        setSaveError("Error saving");
+      }
+    } finally {
       setSaving(false);
     }
   };
@@ -123,9 +124,8 @@ export default function Sidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 z-50 flex h-screen w-64 md:w-[220px] flex-col border-r transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-        }`}
+        className={`fixed left-0 top-0 z-50 flex h-screen w-64 md:w-[220px] flex-col border-r transition-transform duration-300 ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+          }`}
         style={{
           background: "var(--lb-sidebar-bg)",
           borderColor: "var(--lb-sidebar-border)",
@@ -143,21 +143,26 @@ export default function Sidebar() {
 
         {/* ── Operator Identity ── */}
         <div className="px-5 pt-6 pb-4 flex flex-col items-start border-b" style={{ borderColor: "var(--lb-border)" }}>
-          {/* Brand Logo (replacing Avatar) */}
-          <div
-            className="font-display text-3xl font-black tracking-tight leading-none flex items-center mb-2"
-            style={{ color: "var(--lb-text)" }}
-          >
-            <span>code_</span>
+          {/* Brand Logo */}
+          <div className="flex items-center gap-3 mb-4">
+            <Image 
+              src="/codestack_logo.png" 
+              alt="CodeStack Logo Icon" 
+              width={36}
+              height={36}
+              className="object-contain shrink-0"
+              priority
+            />
+            <div className="h-8 w-[2px] opacity-50" style={{ background: "var(--lb-accent)" }} />
             <span
-              className="ml-1 px-1 rounded-sm"
-              style={{ background: "var(--lb-accent)", color: "var(--lb-accent-text)" }}
+              className="font-display text-2xl font-black tracking-tight leading-none pt-1"
+              style={{ color: "var(--lb-text)" }}
             >
-              Stack
+              Code<span style={{ color: "var(--lb-accent)" }}>Stack</span>
             </span>
           </div>
 
-          <div className="mt-3 w-full">
+          <div className="mt-1 w-full">
             <h2
               className="font-mono text-sm font-bold tracking-wide truncate"
               style={{ color: "var(--lb-text)" }}
@@ -175,62 +180,84 @@ export default function Sidebar() {
           {/* Sign Out */}
           <button
             onClick={handleSignOut}
-            className="mt-3 flex items-center gap-2 font-mono text-[10px] tracking-wider transition-colors hover:opacity-100 opacity-60 cursor-pointer"
-            style={{ color: "var(--lb-text-muted)" }}
+            className="mt-4 flex items-center gap-2 px-3 py-1.5 rounded-sm font-mono text-[10px] tracking-wider transition-all duration-300 w-full justify-start"
+            style={{ 
+              color: "var(--lb-text-muted)",
+              background: "rgba(255, 68, 68, 0.05)",
+              border: "1px solid rgba(255, 68, 68, 0.15)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "#ff4444";
+              e.currentTarget.style.background = "rgba(255, 68, 68, 0.15)";
+              e.currentTarget.style.borderColor = "rgba(255, 68, 68, 0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "var(--lb-text-muted)";
+              e.currentTarget.style.background = "rgba(255, 68, 68, 0.05)";
+              e.currentTarget.style.borderColor = "rgba(255, 68, 68, 0.15)";
+            }}
           >
-            <LogOut size={11} />
+            <LogOut size={12} />
             SIGN_OUT
           </button>
         </div>
 
-      {/* ── Navigation ── */}
-      <nav className="flex-1 px-2 md:px-3 mt-2">
-        <ul className="space-y-1">
-          {NAV_ITEMS.map(({ label, icon: Icon, href }) => {
-            const isActive = pathname === href;
-            return (
-              <li key={label}>
-                <Link
-                  href={href}
-                  className="flex items-center justify-center md:justify-start gap-3 rounded-sm px-0 md:px-3 py-2.5 font-mono text-xs tracking-wider transition-colors"
-                  style={{
-                    background: isActive
-                      ? "var(--lb-nav-active-bg)"
-                      : "transparent",
-                    color: isActive
-                      ? "var(--lb-text)"
-                      : "var(--lb-text-muted)",
-                    borderLeft: isActive
-                      ? "2px solid var(--lb-accent)"
-                      : "2px solid transparent",
-                  }}
-                  title={label}
-                >
-                  <Icon size={16} className="shrink-0" />
-                  <span className="hidden md:inline truncate">{label}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+        {/* ── Navigation ── */}
+        <nav className="flex-1 px-3 mt-2">
+          <ul className="space-y-1">
+            {NAV_ITEMS.map(({ label, icon: Icon, href }) => {
+              const isActive = pathname === href;
+              return (
+                <li key={label}>
+                  <Link
+                    href={href}
+                    className="flex items-center justify-start gap-3 rounded-sm px-3 py-2.5 font-mono text-xs tracking-wider transition-colors"
+                    style={{
+                      background: isActive
+                        ? "var(--lb-nav-active-bg)"
+                        : "transparent",
+                      color: isActive
+                        ? "var(--lb-text)"
+                        : "var(--lb-text-muted)",
+                      borderLeft: isActive
+                        ? "2px solid var(--lb-accent)"
+                        : "2px solid transparent",
+                    }}
+                    title={label}
+                  >
+                    <Icon size={16} className="shrink-0" />
+                    <span className="truncate">{label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
 
-      {/* ── Join Links ── */}
-      <div className="px-2 md:px-3 mb-2 flex flex-col gap-1">
-        <a
-          href="https://discord.gg/jTTckmfwfR"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center md:justify-start gap-3 rounded-sm px-0 md:px-3 py-2 font-mono text-xs tracking-wider transition-colors text-[var(--lb-text-muted)] hover:text-[#5865F2] hover:bg-[var(--lb-nav-active-bg)]"
-          title="Join Discord"
-        >
-          <FaDiscord size={16} className="shrink-0" />
-          <span className="hidden md:inline truncate">DISCORD</span>
-        </a>
-      </div>
+        {/* ── Join Links & Tracker ── */}
+        <div className="px-3 mb-2 flex flex-col gap-1">
+          <button
+            onClick={() => setShowTrackerModal(true)}
+            className="flex items-center justify-start gap-3 rounded-sm px-3 py-2 font-mono text-xs tracking-wider cursor-pointer transition-all text-[var(--lb-accent)] border border-[var(--lb-accent)]/30 hover:bg-[var(--lb-accent)] hover:text-[var(--lb-accent-text)] hover:border-[var(--lb-accent)]"
+            title="Download Tracker"
+          >
+            <Download size={16} className="shrink-0" />
+            <span className="truncate">GET TRACKER</span>
+          </button>
+          <a
+            href="https://discord.gg/jTTckmfwfR"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-start gap-3 rounded-sm px-3 py-2 font-mono text-xs tracking-wider transition-colors text-[var(--lb-text-muted)] hover:text-[#5865F2] hover:bg-[var(--lb-nav-active-bg)]"
+            title="Join Discord"
+          >
+            <FaDiscord size={16} className="shrink-0" />
+            <span className="truncate">DISCORD</span>
+          </a>
+        </div>
 
-      {/* ── Platforms ── */}
-      <div className="px-4 py-3 mt-auto border-t" style={{ borderColor: "var(--lb-border)" }}>
+        {/* ── Platforms ── */}
+        <div className="px-4 py-3 mt-auto border-t" style={{ borderColor: "var(--lb-border)" }}>
           <div className="flex items-center justify-between mb-2">
             <span className="font-mono text-[9px] tracking-widest uppercase" style={{ color: "var(--lb-text-muted)" }}>
               PLATFORMS
@@ -307,6 +334,42 @@ export default function Sidebar() {
           <ThemeToggle />
         </div>
       </aside>
+
+      {/* Tracker Modal */}
+      {showTrackerModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowTrackerModal(false)} />
+          <div 
+            className="relative w-full max-w-md border p-6 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200"
+            style={{ 
+              background: "var(--lb-surface)", 
+              borderColor: "var(--lb-border-accent)",
+              boxShadow: "0 0 40px rgba(var(--lb-accent-rgb, 100, 255, 150), 0.15)"
+            }}
+          >
+            <button 
+              onClick={() => setShowTrackerModal(false)}
+              className="absolute top-4 right-4 text-[var(--lb-text-muted)] hover:text-[var(--lb-text)] transition-colors"
+            >
+              <X size={20} />
+            </button>
+            <h3 className="font-display text-2xl font-bold" style={{ color: "var(--lb-text)" }}>CONTEST TRACKER</h3>
+            <div className="px-3 py-1 border font-mono text-xs w-fit uppercase tracking-widest" style={{ borderColor: "var(--lb-accent)", background: "rgba(var(--lb-accent-rgb, 100, 255, 150), 0.1)", color: "var(--lb-accent)" }}>
+              Available on Android Only
+            </div>
+            <p className="font-mono text-sm leading-relaxed mt-2" style={{ color: "var(--lb-text-muted)" }}>
+              The Contest Tracker helps you track upcoming competitive programming contests across platforms right from your phone. Set reminders, view leaderboards, and never miss a rated match.
+            </p>
+            <button
+              onClick={() => setShowTrackerModal(false)}
+              className="mt-4 px-4 py-2 font-mono text-sm font-bold tracking-widest hover:opacity-90 transition-opacity"
+              style={{ background: "var(--lb-accent)", color: "var(--lb-accent-text)" }}
+            >
+              ACKNOWLEDGE
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

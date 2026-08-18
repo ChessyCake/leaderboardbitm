@@ -43,27 +43,41 @@ export default function FAQPage() {
 
   return (
     <div 
-      className="min-h-screen px-3 sm:px-6 md:px-10 py-6 sm:py-8 md:py-12 w-full overflow-hidden flex flex-col"
+      className="min-h-screen px-3 sm:px-6 md:px-10 py-6 sm:py-8 md:py-12 w-full overflow-hidden flex flex-col relative"
       style={{ background: "var(--lb-bg)" }}
     >
-      <div className="flex-1 w-full max-w-5xl mx-auto">
+      {/* Background glow effect */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--lb-accent)] opacity-[0.03] blur-[100px] rounded-full pointer-events-none" />
+
+      <div className="flex-1 w-full max-w-5xl mx-auto relative z-10">
         {/* Header Section */}
-        <header className="mb-8 sm:mb-12">
+        <header className="mb-12 sm:mb-16">
           <h1
-            className="font-display text-4xl sm:text-6xl md:text-7xl font-black tracking-tight leading-none"
-            style={{ color: "var(--lb-text)" }}
+            className="font-display text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter leading-none"
+            style={{ 
+              color: "transparent",
+              WebkitTextStroke: "1px rgba(255,255,255,0.1)",
+              backgroundImage: "linear-gradient(to bottom right, var(--lb-text), var(--lb-text-muted))",
+              WebkitBackgroundClip: "text",
+            }}
           >
             SYSTEM_HELP
           </h1>
 
-          <div className="mt-2 inline-block">
+          <div className="mt-6 inline-block animate-in fade-in slide-in-from-left-4 duration-500 delay-150">
             <div
-              className="px-3 sm:px-4 py-1.5 sm:py-2 -skew-x-3"
-              style={{ background: "var(--lb-accent)" }}
+              className="px-6 py-2 border-l-4"
+              style={{ 
+                borderColor: "var(--lb-accent)",
+                background: "linear-gradient(90deg, rgba(var(--lb-accent-rgb, 100, 255, 150), 0.1), transparent)"
+              }}
             >
               <span
-                className="block skew-x-3 font-display text-2xl sm:text-4xl md:text-5xl font-black tracking-tight"
-                style={{ color: "var(--lb-accent-text)" }}
+                className="block font-display text-2xl sm:text-4xl md:text-5xl font-black tracking-widest"
+                style={{ 
+                  color: "var(--lb-accent)",
+                  textShadow: "0 0 20px rgba(var(--lb-accent-rgb, 100, 255, 150), 0.3)"
+                }}
               >
                 {"// F.A.Q"}
               </span>
@@ -71,60 +85,61 @@ export default function FAQPage() {
           </div>
 
           <p
-            className="mt-4 font-mono text-sm sm:text-base tracking-wider max-w-xl"
+            className="mt-6 font-mono text-sm sm:text-base tracking-wider max-w-2xl leading-relaxed"
             style={{ color: "var(--lb-text-muted)" }}
           >
-            Frequently asked questions about the CodeStack platform, leaderboard mechanics, and data privacy. Click on a question to reveal its answer.
+            Frequently asked questions about the CodeStack platform, leaderboard mechanics, and data privacy. Click on a question to reveal its decrypted response.
           </p>
         </header>
 
         {/* Section Label */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-8 flex items-center justify-between">
           <span
-            className="inline-flex items-center gap-2 border px-4 py-2 font-mono text-sm sm:text-base tracking-widest uppercase"
+            className="inline-flex items-center gap-3 border px-5 py-2.5 font-mono text-sm sm:text-base tracking-widest uppercase shadow-sm"
             style={{
               borderColor: "var(--lb-border-accent)",
-              color: "var(--lb-text-secondary)",
-              background: "var(--lb-surface)",
+              color: "var(--lb-text)",
+              background: "rgba(var(--lb-surface-rgb, 20, 20, 20), 0.5)",
+              backdropFilter: "blur(8px)"
             }}
           >
-            <MessageCircleQuestion size={14} style={{ color: "var(--lb-accent)" }} />
+            <MessageCircleQuestion size={16} style={{ color: "var(--lb-accent)" }} />
             {"// KNOWLEDGE_BASE"}
           </span>
-          <span
-            className="font-mono text-xs sm:text-sm tracking-wider hidden sm:inline-block"
-            style={{ color: "var(--lb-text-muted)" }}
-          >
-            [{FAQ_DATA.length} QUERIES]
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: "var(--lb-accent)" }} />
+            <span
+              className="font-mono text-xs sm:text-sm tracking-widest hidden sm:inline-block"
+              style={{ color: "var(--lb-text-muted)" }}
+            >
+              [{FAQ_DATA.length} QUERIES]
+            </span>
+          </div>
         </div>
 
         {/* Accordion Container */}
-        <div
-          className="border overflow-hidden w-full flex flex-col"
-          style={{ borderColor: "var(--lb-border)" }}
-        >
+        <div className="flex flex-col gap-4 w-full">
           {FAQ_DATA.map((item, index) => {
             const isOpen = openIndex === index;
 
             return (
               <div
                 key={item.sysCode}
-                className="group border-b last:border-b-0 transition-colors duration-200"
+                className="group border transition-all duration-300 ease-out"
                 style={{
-                  background: isOpen ? "var(--lb-card-highlight-bg)" : "var(--lb-card-bg)",
-                  borderColor: "var(--lb-border)",
+                  background: isOpen ? "rgba(var(--lb-surface-rgb, 20, 20, 20), 0.8)" : "rgba(var(--lb-surface-rgb, 20, 20, 20), 0.3)",
+                  borderColor: isOpen ? "var(--lb-accent)" : "var(--lb-border)",
+                  boxShadow: isOpen ? "0 0 30px rgba(var(--lb-accent-rgb, 100, 255, 150), 0.1)" : "none",
+                  transform: isOpen ? "scale([1.01])" : "scale(1)",
+                  backdropFilter: "blur(12px)",
                 }}
               >
                 <button
                   onClick={() => toggleAccordion(index)}
-                  className="w-full flex items-center justify-between p-4 sm:p-6 text-left cursor-pointer transition-colors"
-                  style={{ 
-                    borderLeft: isOpen ? "3px solid var(--lb-accent)" : "3px solid transparent",
-                  }}
+                  className="w-full flex items-center justify-between p-5 sm:p-7 text-left cursor-pointer transition-colors outline-none"
                   onMouseEnter={(e) => {
                     if (!isOpen) {
-                      e.currentTarget.style.background = "var(--lb-entry-hover)";
+                      e.currentTarget.style.background = "rgba(var(--lb-surface-rgb, 20, 20, 20), 0.6)";
                     }
                   }}
                   onMouseLeave={(e) => {
@@ -133,56 +148,57 @@ export default function FAQPage() {
                     }
                   }}
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-start sm:items-center gap-5">
                     <span
-                      className="font-mono text-xs sm:text-sm tracking-widest hidden sm:inline-block"
-                      style={{ color: isOpen ? "var(--lb-accent)" : "var(--lb-text-dim)" }}
+                      className="font-mono text-xs sm:text-sm tracking-widest mt-1 sm:mt-0"
+                      style={{ color: isOpen ? "var(--lb-accent)" : "var(--lb-text-muted)" }}
                     >
                       [{item.sysCode}]
                     </span>
                     <h3
-                      className="font-mono text-sm sm:text-base md:text-lg font-bold tracking-wider"
-                      style={{ color: isOpen ? "var(--lb-accent)" : "var(--lb-text)" }}
+                      className="font-mono text-base sm:text-lg md:text-xl font-bold tracking-wider"
+                      style={{ color: isOpen ? "var(--lb-text)" : "var(--lb-text-secondary)" }}
                     >
                       {item.question}
                     </h3>
                   </div>
                   
                   <div 
-                    className="flex-shrink-0 ml-4 transition-transform duration-300"
+                    className="flex-shrink-0 ml-4 transition-transform duration-500 ease-[cubic-bezier(0.87,_0,_0.13,_1)]"
                     style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}
                   >
                     {isOpen ? (
-                      <Minus size={18} style={{ color: "var(--lb-accent)" }} />
+                      <Minus size={20} style={{ color: "var(--lb-accent)", filter: "drop-shadow(0 0 8px var(--lb-accent))" }} />
                     ) : (
-                      <Plus size={18} style={{ color: "var(--lb-text-muted)" }} />
+                      <Plus size={20} style={{ color: "var(--lb-text-muted)" }} />
                     )}
                   </div>
                 </button>
                 
                 {/* Answer / Expandable Area */}
                 <div 
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
+                  className={`overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.87,_0,_0.13,_1)] ${isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
                 >
                   <div 
-                    className="p-4 sm:p-6 pt-0 border-t"
-                    style={{ 
-                      borderColor: "rgba(255,255,255,0.05)",
-                      borderLeft: "3px solid var(--lb-accent)"
-                    }}
+                    className="p-5 sm:p-7 pt-0"
                   >
-                    <p 
-                      className="font-mono text-sm sm:text-base tracking-wide leading-relaxed pl-0 sm:pl-12"
-                      style={{ color: "var(--lb-text-secondary)" }}
+                    <div 
+                      className="p-4 sm:p-6 border-l-2 bg-black/20"
+                      style={{ borderColor: "var(--lb-accent)" }}
                     >
-                      <span 
-                        className="inline-block mr-2 font-bold" 
+                      <p 
+                        className="font-mono text-sm sm:text-base tracking-wide leading-relaxed"
                         style={{ color: "var(--lb-text-muted)" }}
                       >
-                        {'>'} RESPONSE:
-                      </span>
-                      {item.answer}
-                    </p>
+                        <span 
+                          className="inline-block mr-3 font-bold uppercase tracking-widest" 
+                          style={{ color: "var(--lb-text)" }}
+                        >
+                          {'>'} DECRYPTED_RESPONSE:
+                        </span>
+                        {item.answer}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -192,41 +208,45 @@ export default function FAQPage() {
 
         {/* Support CTA */}
         <div
-          className="mt-10 border overflow-hidden w-full"
-          style={{ borderColor: "var(--lb-border)" }}
+          className="mt-16 border relative overflow-hidden group transition-all duration-500 hover:border-[var(--lb-accent)]"
+          style={{ 
+            borderColor: "var(--lb-border)",
+            background: "linear-gradient(180deg, rgba(var(--lb-surface-rgb, 20, 20, 20), 0.8), transparent)",
+          }}
         >
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[var(--lb-accent)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          
           <div
-            className="flex items-center gap-2 px-4 py-2.5 border-b"
+            className="flex items-center gap-2 px-5 py-3 border-b"
             style={{
-              background: "var(--lb-surface)",
+              background: "rgba(0,0,0,0.2)",
               borderColor: "var(--lb-border)",
             }}
           >
             <span
-              className="font-mono text-xs sm:text-sm tracking-widest uppercase flex items-center gap-2"
+              className="font-mono text-xs sm:text-sm tracking-widest uppercase flex items-center gap-3"
               style={{ color: "var(--lb-text-muted)" }}
             >
-              <span className="w-2 h-2 rounded-full inline-block animate-pulse" style={{ background: "var(--lb-accent)" }} />
-              STILL_HAVE_QUESTIONS?
+              <span className="w-2 h-2 rounded-none inline-block animate-pulse" style={{ background: "var(--lb-accent)" }} />
+              SYSTEM_SUPPORT_REQUIRED?
             </span>
           </div>
 
           <div
-            className="px-6 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
-            style={{ background: "var(--lb-card-bg)" }}
+            className="px-6 py-10 sm:px-10 sm:py-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-8"
           >
-            <div className="max-w-lg">
+            <div className="max-w-xl relative z-10">
               <h3
-                className="font-display text-xl md:text-2xl font-bold tracking-tight mb-2"
+                className="font-display text-2xl md:text-3xl font-bold tracking-tight mb-4"
                 style={{ color: "var(--lb-text)" }}
               >
-                ASK THE COMMUNITY
+                INITIATE COMMUNITY LINK
               </h3>
               <p
                 className="font-mono text-sm sm:text-base tracking-wider leading-relaxed"
                 style={{ color: "var(--lb-text-muted)" }}
               >
-                If your question wasn&apos;t answered here, join our Discord server. Our moderators and community members are active and ready to help you with any issues or queries.
+                If your query remains unresolved, establish a connection with our Discord mainframe. Active moderators and operators are on standby to assist you.
               </p>
             </div>
 
@@ -234,23 +254,16 @@ export default function FAQPage() {
               href={DISCORD_LINK}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 border px-5 py-3 font-mono text-sm sm:text-base font-bold tracking-wider transition-all flex-shrink-0 cursor-pointer"
+              className="relative flex items-center gap-3 border px-8 py-4 font-mono text-sm sm:text-base font-bold tracking-widest transition-all flex-shrink-0 cursor-pointer overflow-hidden group/btn"
               style={{
                 borderColor: "var(--lb-accent)",
                 color: "var(--lb-accent)",
                 background: "transparent",
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "var(--lb-accent)";
-                e.currentTarget.style.color = "var(--lb-accent-text)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.color = "var(--lb-accent)";
-              }}
             >
-              CONNECT_NOW
-              <ExternalLink size={14} />
+              <div className="absolute inset-0 bg-[var(--lb-accent)] -translate-x-full group-hover/btn:translate-x-0 transition-transform duration-300 ease-out" />
+              <span className="relative z-10 group-hover/btn:text-[var(--lb-accent-text)] transition-colors duration-300">ESTABLISH_CONNECTION</span>
+              <ExternalLink size={16} className="relative z-10 group-hover/btn:text-[var(--lb-accent-text)] transition-colors duration-300" />
             </a>
           </div>
         </div>
@@ -258,7 +271,7 @@ export default function FAQPage() {
       </div>
       
       {/* Footer */}
-      <div className="mt-12">
+      <div className="mt-auto relative z-10">
         <LeaderboardFooter />
       </div>
     </div>

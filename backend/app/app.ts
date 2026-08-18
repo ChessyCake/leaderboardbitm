@@ -47,4 +47,9 @@ app.use("/api/v1/username", usernameRoutes);
 
 app.use("/internal/bot", botRoutes);
 
+// Health check route for UptimeRobot
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 export default app;
