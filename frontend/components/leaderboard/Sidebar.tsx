@@ -375,7 +375,7 @@ export default function Sidebar() {
               The Contest Tracker helps you track upcoming competitive programming contests across platforms right from your phone. Set reminders, view leaderboards, and never miss a rated match.
             </p>
             <a
-              href="https://expo.dev/accounts/ha-rsh/projects/frontend/builds/1faa6b31-c251-49af-9ede-8c2f2a065420"
+              href="https://expo.dev/accounts/ha-rsh/projects/frontend/builds/47e4246e-8a83-43c6-a777-aa5aa0c5c7a2"
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setShowTrackerModal(false)}
