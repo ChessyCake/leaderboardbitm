@@ -42,3 +42,28 @@ export const getSub = async ({
         return [];
     }
 };
+
+export const getPreviousContest = async (): Promise<number> => {
+    const res = await fetch(
+        "https://codeforces.com/api/contest.list?gym=false"
+    );
+
+    const data = await res.json();
+
+    if (data.status !== "OK") {
+        throw new Error(data.comment ?? "Failed to fetch contests");
+    }
+
+    const finishedContests = data.result
+        .filter((contest: any) => contest.phase === "FINISHED")
+        .sort(
+            (a: any, b: any) =>
+                (b.startTimeSeconds ?? 0) - (a.startTimeSeconds ?? 0)
+        );
+
+    if (finishedContests.length === 0) {
+        throw new Error("No finished contest found");
+    }
+
+    return finishedContests[0].id;
+};

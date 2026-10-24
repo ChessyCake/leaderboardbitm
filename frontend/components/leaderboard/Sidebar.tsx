@@ -24,6 +24,7 @@ import { FaDiscord } from "react-icons/fa6";
 
 const NAV_ITEMS = [
   { label: "RANKINGS", icon: Trophy, href: "/leaderboard" },
+  { label: "CF CONTEST", icon: SiCodeforces, href: "/cfcontest" },
   { label: "ARCHIVE", icon: Archive, href: "/archive" },
 ];
 

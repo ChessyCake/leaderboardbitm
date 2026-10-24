@@ -74,3 +74,72 @@ export interface ArchiveApiResponse {
   leaderboard: LeaderboardUser[];
   stats: StatsOverview;
 }
+
+/**
+ * Codeforces Contest Information
+ */
+export interface CfContestInfo {
+  id: number;
+  name: string;
+  type: string;
+  phase: string;
+  frozen: boolean;
+  durationSeconds: number;
+  startTimeSeconds?: number;
+  relativeTimeSeconds?: number;
+}
+
+/**
+ * Problem metadata in Codeforces contest
+ */
+export interface CfContestProblem {
+  contestId?: number;
+  index: string;
+  name: string;
+  type?: string;
+  points?: number;
+  rating?: number;
+  tags?: string[];
+}
+
+/**
+ * Problem result for a participant
+ */
+export interface CfProblemResult {
+  points: number;
+  penalty?: number;
+  rejectedAttemptCount?: number;
+  type?: string;
+  bestSubmissionTimeSeconds?: number;
+}
+
+/**
+ * User entry in the Codeforces contest standings
+ */
+export interface CfContestUser {
+  rank: number;
+  localRank?: number;
+  name: string;
+  username: string;
+  avatar?: string;
+  points: number;
+  penalty?: number;
+  problemsSolved?: number;
+  problemResults?: CfProblemResult[];
+}
+
+/**
+ * Full API response shape from GET /cfcontest
+ */
+export interface CfContestApiResponse {
+  message?: boolean;
+  success?: boolean;
+  contest?: CfContestInfo | null;
+  problems?: CfContestProblem[];
+  totalParticipants?: number;
+  darn?: CfContestUser[];
+  leaderboard?: CfContestUser[];
+  data?: CfContestUser[];
+  error?: string;
+}
+

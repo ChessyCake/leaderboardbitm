@@ -12,6 +12,7 @@ import statsRoutes from "../routes/stats.route";
 import archiveRoutes from "../routes/archive.route";
 import usernameRoutes from "../routes/username.route";
 import botRoutes from "../routes/bot.routes";
+import cfcontestRoutes from "../routes/cfcontestlb.routes"
 
 const app = express();
 
@@ -46,6 +47,8 @@ app.use("/api/v1/archive", archiveRoutes);
 app.use("/api/v1/username", usernameRoutes);
 
 app.use("/internal/bot", botRoutes);
+
+app.use("/cfcontest", cfcontestRoutes)
 
 // Health check route for UptimeRobot
 app.get("/health", (req, res) => {
